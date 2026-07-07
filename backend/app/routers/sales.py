@@ -43,7 +43,7 @@ class SaleItemResponse(BaseModel):
     subtotal: float
     
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 # Sale Response
 class SaleResponse(BaseModel):
@@ -61,7 +61,7 @@ class SaleResponse(BaseModel):
     items: List[SaleItemResponse]
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 # Suspend Bill Schemas
 class SuspendRequest(BaseModel):
@@ -76,7 +76,7 @@ class SuspendedBillResponse(BaseModel):
     cart_data: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 # Returns Schemas
 class ReturnItemRequest(BaseModel):

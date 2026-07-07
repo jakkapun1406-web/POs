@@ -27,7 +27,7 @@ class ReceiptResponse(BaseModel):
     received_at: datetime.datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 @router.post("/", response_model=ReceiptResponse, status_code=status.HTTP_201_CREATED)
 def create_stock_receipt(receipt: ReceiptCreate, db: Session = Depends(get_db), current_emp: Employee = Depends(get_current_employee)):

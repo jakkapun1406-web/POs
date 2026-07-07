@@ -39,7 +39,7 @@ class ProductResponse(ProductBase):
     warning_price_cap: bool
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 # Helper to calculate price recommendation
 def get_price_recommendation(cost_price: float, tax_percent: float, labor_cost: float, market_price_cap: float):
