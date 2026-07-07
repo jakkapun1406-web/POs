@@ -663,137 +663,137 @@ const POS: React.FC = () => {
               </Typography>
             </Box>
 
-            {/* Welfare toggle config */}
-            <Box sx={{ mb: 1.5, p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
-              <FormControlLabel
-                control={
-                  <Switch 
-                    checked={useWelfare} 
-                    onChange={(e) => setUseWelfare(e.target.checked)} 
-                    color="secondary"
-                    size="small"
-                  />
-                }
-                label={<strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>คนละครึ่ง (สวัสดิการรัฐ)</strong>}
-                sx={{ m: 0 }}
-              />
-              {useWelfare && (
-                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="caption" sx={{ color: '#64748b' }}>
-                    * รัฐช่วย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
-                  </Typography>
-                  <TextField
-                    label="จำนวนรัฐออกให้"
-                    type="number"
-                    size="small"
-                    value={discountGovt}
-                    onChange={(e) => setDiscountGovt(Math.min(totalCartAmount, parseFloat(e.target.value) || 0))}
-                  />
-                  <Divider sx={{ my: 0.5, borderColor: 'rgba(255,255,255,0.06)' }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>ยอดเก็บสดหน้าร้านจริง:</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#ef4444' }}>
-                      ฿{(customerPortion).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-            </Box>
-
-            {/* Payment buttons */}
-            <ButtonGroup fullWidth sx={{ mb: 2, '& .MuiButton-root': { py: 1.8, fontSize: '1.05rem', fontWeight: 900 } }}>
-              <Button 
-                variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
-                onClick={() => setPaymentType('cash')}
-                startIcon={<LocalAtmIcon />}
-              >
-                เงินสด
-              </Button>
-              <Button 
-                variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
-                onClick={() => setPaymentType('qr')}
-                startIcon={<QrCodeScannerIcon />}
-              >
-                สแกน QR
-              </Button>
-              <Button 
-                variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
-                onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
-                startIcon={<PointOfSaleIcon />}
-              >
-                เป๋าตัง
-              </Button>
-            </ButtonGroup>
-
-            {/* Cash details and Thai banknote buttons */}
-            {paymentType === 'cash' && (
-              <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <TextField
-                  label="รับเงินสดมา (Cash Received)"
-                  variant="outlined"
-                  type="number"
-                  fullWidth
-                  value={cashReceived}
-                  onChange={(e) => setCashReceived(e.target.value)}
-                  autoComplete="off"
-                  slotProps={{ 
-                    htmlInput: { 
-                      style: { 
-                        fontSize: '1.6rem', 
-                        fontWeight: 900, 
-                        color: '#fff', 
-                        textAlign: 'right',
-                        padding: '12px 14px' 
-                      } 
-                    } 
-                  }}
+            {/* Scrollable Container for inputs (keeps them from pushing the PAY button off screen) */}
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5, mb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {/* Welfare toggle config */}
+              <Box sx={{ p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
+                <FormControlLabel
+                  control={
+                    <Switch 
+                      checked={useWelfare} 
+                      onChange={(e) => setUseWelfare(e.target.checked)} 
+                      color="secondary"
+                      size="small"
+                    />
+                  }
+                  label={<strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>คนละครึ่ง (สวัสดิการรัฐ)</strong>}
+                  sx={{ m: 0 }}
                 />
-                
-                {/* Banknote Buttons styled like Thai bills - 2 rows of 3 columns */}
-                <Grid container spacing={1}>
-                  {[
-                    { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
-                    { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
-                    { value: 100, bg: '#450a0a', color: '#f87171', label: '100' },
-                    { value: 500, bg: '#3b0764', color: '#c084fc', label: '500' },
-                    { value: 1000, bg: '#292524', color: '#f4ebe4', label: '1,000' }
-                  ].map(b => (
-                    <Grid size={4} key={b.value}>
+                {useWelfare && (
+                  <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                      * รัฐช่วย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
+                    </Typography>
+                    <TextField
+                      label="จำนวนรัฐออกให้"
+                      type="number"
+                      size="small"
+                      value={discountGovt}
+                      onChange={(e) => setDiscountGovt(Math.min(totalCartAmount, parseFloat(e.target.value) || 0))}
+                    />
+                    <Divider sx={{ my: 0.5, borderColor: 'rgba(255,255,255,0.06)' }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>ยอดเก็บสดหน้าร้านจริง:</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 800, color: '#ef4444' }}>
+                        ฿{(customerPortion).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Payment buttons */}
+              <ButtonGroup fullWidth sx={{ '& .MuiButton-root': { py: 1.8, fontSize: '1.05rem', fontWeight: 900 } }}>
+                <Button 
+                  variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
+                  onClick={() => setPaymentType('cash')}
+                  startIcon={<LocalAtmIcon />}
+                >
+                  เงินสด
+                </Button>
+                <Button 
+                  variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
+                  onClick={() => setPaymentType('qr')}
+                  startIcon={<QrCodeScannerIcon />}
+                >
+                  สแกน QR
+                </Button>
+                <Button 
+                  variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
+                  onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
+                  startIcon={<PointOfSaleIcon />}
+                >
+                  เป๋าตัง
+                </Button>
+              </ButtonGroup>
+
+              {/* Cash details and Thai banknote buttons */}
+              {paymentType === 'cash' && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <TextField
+                    label="รับเงินสดมา (Cash Received)"
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    value={cashReceived}
+                    onChange={(e) => setCashReceived(e.target.value)}
+                    autoComplete="off"
+                    slotProps={{ 
+                      htmlInput: { 
+                        style: { 
+                          fontSize: '1.6rem', 
+                          fontWeight: 900, 
+                          color: '#fff', 
+                          textAlign: 'right',
+                          padding: '12px 14px' 
+                        } 
+                      } 
+                    }}
+                  />
+                  
+                  {/* Banknote Buttons styled like Thai bills - 2 rows of 3 columns */}
+                  <Grid container spacing={1}>
+                    {[
+                      { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
+                      { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
+                      { value: 100, bg: '#450a0a', color: '#f87171', label: '100' },
+                      { value: 500, bg: '#3b0764', color: '#c084fc', label: '500' },
+                      { value: 1000, bg: '#292524', color: '#f4ebe4', label: '1,000' }
+                    ].map(b => (
+                      <Grid size={4} key={b.value}>
+                        <Button 
+                          fullWidth 
+                          onClick={() => {
+                            const currentVal = parseFloat(cashReceived) || 0;
+                            setCashReceived((currentVal + b.value).toString());
+                          }}
+                          sx={{ 
+                            bgcolor: b.bg, 
+                            color: b.color, 
+                            fontSize: '1rem',
+                            fontWeight: 900,
+                            py: 1.4, 
+                            borderRadius: 2,
+                            border: `1px solid ${b.color}44`,
+                            '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
+                          }}
+                        >
+                          +{b.label}
+                        </Button>
+                      </Grid>
+                    ))}
+                    {/* Clear Button */}
+                    <Grid size={4}>
                       <Button 
                         fullWidth 
-                        onClick={() => {
-                          const currentVal = parseFloat(cashReceived) || 0;
-                          setCashReceived((currentVal + b.value).toString());
-                        }}
+                        onClick={() => setCashReceived('')}
                         sx={{ 
-                          bgcolor: b.bg, 
-                          color: b.color, 
+                          bgcolor: '#1e293b', 
+                          color: '#ef4444', 
                           fontSize: '1rem',
                           fontWeight: 900,
                           py: 1.4, 
                           borderRadius: 2,
-                          border: `1px solid ${b.color}44`,
-                          '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
-                        }}
-                      >
-                        +{b.label}
-                      </Button>
-                    </Grid>
-                  ))}
-                  {/* Clear Button */}
-                  <Grid size={4}>
-                    <Button 
-                      fullWidth 
-                      onClick={() => setCashReceived('')}
-                      sx={{ 
-                        bgcolor: '#1e293b', 
-                        color: '#ef4444', 
-                        fontSize: '1rem',
-                        fontWeight: 900,
-                        py: 1.4, 
-                        borderRadius: 2,
-                        border: '1px solid rgba(239,68,68,0.2)',
-                        '&:hover': { bgcolor: '#334155' }
                       }}
                     >
                       ล้างยอด (C)
@@ -819,8 +819,7 @@ const POS: React.FC = () => {
                 </Box>
               </Box>
             )}
-
-            <Box sx={{ flexGrow: 1 }} />
+            </Box>
 
             <Button
               fullWidth
