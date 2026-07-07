@@ -63,7 +63,7 @@ def get_products(db: Session = Depends(get_db), current_emp: Employee = Depends(
 
 @router.get("/barcode/{barcode}", response_model=ProductResponse)
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db), current_emp: Employee = Depends(get_current_employee)):
-    p = db.query(Product).filter(Product.barcode == barcode).first()
+    p = db.query(Product).filter(Product.barcode == barcode.strip().lower()).first()
     if not p:
         raise HTTPException(status_code=404, detail="ไม่พบสินค้าจากบาร์โค้ดนี้")
     rec_price, warning = get_price_recommendation(p.cost_price, p.tax_percent, p.labor_cost, p.market_price_cap)
@@ -74,12 +74,17 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db), current_
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate, db: Session = Depends(get_db), current_admin: Employee = Depends(get_current_admin)):
+    barcode_lower = product.barcode.strip().lower()
+    
     # Check duplicate barcode
-    existing = db.query(Product).filter(Product.barcode == product.barcode).first()
+    existing = db.query(Product).filter(Product.barcode == barcode_lower).first()
     if existing:
         raise HTTPException(status_code=400, detail="รหัสบาร์โค้ดนี้มีอยู่ในระบบแล้ว")
         
-    db_product = Product(**product.model_dump())
+    product_data = product.dict()
+    product_data["barcode"] = barcode_lower
+    
+    db_product = Product(**product_data)
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
@@ -96,14 +101,19 @@ def update_product(product_id: int, product_data: ProductUpdate, db: Session = D
     if not db_product:
         raise HTTPException(status_code=404, detail="ไม่พบสินค้าที่ต้องการแก้ไข")
         
+    barcode_lower = product_data.barcode.strip().lower()
+    
     # Check duplicate barcode if barcode is changed
-    if db_product.barcode != product_data.barcode:
-        existing = db.query(Product).filter(Product.barcode == product_data.barcode).first()
+    if db_product.barcode != barcode_lower:
+        existing = db.query(Product).filter(Product.barcode == barcode_lower).first()
         if existing:
             raise HTTPException(status_code=400, detail="รหัสบาร์โค้ดใหม่นี้มีอยู่ในระบบแล้ว")
 
     # Update fields
-    for key, value in product_data.model_dump().items():
+    updated_dict = product_data.dict()
+    updated_dict["barcode"] = barcode_lower
+    
+    for key, value in updated_dict.items():
         setattr(db_product, key, value)
         
     db.commit()

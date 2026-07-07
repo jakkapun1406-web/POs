@@ -119,15 +119,15 @@ const Inventory: React.FC = () => {
     }
 
     const payload = {
-      barcode: barcode.trim(),
+      barcode: barcode.trim().toLowerCase(),
       name: name.trim(),
-      category: category.trim(),
+      category: category.trim().toLowerCase(),
       cost_price: parseFloat(costPrice) || 0,
       sell_price: parseFloat(sellPrice) || 0,
       pack_sell_price: packSellPrice.trim() ? parseFloat(packSellPrice) : null,
       stock_qty: parseInt(stockQty) || 0,
-      base_unit: baseUnit.trim(),
-      pack_unit: packUnit.trim(),
+      base_unit: baseUnit.trim().toLowerCase(),
+      pack_unit: packUnit.trim().toLowerCase(),
       pack_size: parseInt(packSize) || 1,
       tax_percent: parseFloat(taxPercent) || 0,
       labor_cost: parseFloat(laborCost) || 0,
@@ -327,12 +327,30 @@ const Inventory: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#3b82f6' }}>📦 รายละเอียดสินค้าทั่วไป</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                <TextField label="รหัสบาร์โค้ด / Barcode" fullWidth value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+                <TextField 
+                  label="รหัสบาร์โค้ด / Barcode" 
+                  fullWidth 
+                  value={barcode} 
+                  onChange={(e) => setBarcode(e.target.value)} 
+                  helperText="* แนะนำใช้ภาษาอังกฤษตัวเล็กเท่านั้น (เช่น singha) เพื่อป้องกันข้อผิดพลาดการสแกนคิดเงิน"
+                />
                 <TextField label="ชื่อสินค้า / Product Name" fullWidth value={name} onChange={(e) => setName(e.target.value)} />
-                <TextField label="หมวดหมู่ / Category" fullWidth value={category} onChange={(e) => setCategory(e.target.value)} />
+                <TextField 
+                  label="หมวดหมู่ / Category" 
+                  fullWidth 
+                  value={category} 
+                  onChange={(e) => setCategory(e.target.value)} 
+                  helperText="* แนะนำใช้ตัวพิมพ์เล็ก (เช่น drink, snack) เพื่อสถิติที่ถูกต้อง"
+                />
                 <Grid container spacing={2}>
                   <Grid size={6}>
-                    <TextField label="หน่วยย่อย (เช่น ชิ้น, ขวด)" fullWidth value={baseUnit} onChange={(e) => setBaseUnit(e.target.value)} />
+                    <TextField 
+                      label="หน่วยย่อย (เช่น ชิ้น, ขวด)" 
+                      fullWidth 
+                      value={baseUnit} 
+                      onChange={(e) => setBaseUnit(e.target.value)} 
+                      helperText="* แนะนำใช้ตัวพิมพ์เล็ก (เช่น pcs, bottle)"
+                    />
                   </Grid>
                   <Grid size={6}>
                     <TextField label="จำนวนในคลังเริ่มต้น" type="number" fullWidth value={stockQty} onChange={(e) => setStockQty(e.target.value)} />
@@ -347,7 +365,13 @@ const Inventory: React.FC = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <Grid container spacing={2}>
                   <Grid size={6}>
-                    <TextField label="หน่วยแพ็ค (เช่น แพ็ค, กล่อง)" fullWidth value={packUnit} onChange={(e) => setPackUnit(e.target.value)} />
+                    <TextField 
+                      label="หน่วยแพ็ค (เช่น แพ็ค, กล่อง)" 
+                      fullWidth 
+                      value={packUnit} 
+                      onChange={(e) => setPackUnit(e.target.value)} 
+                      helperText="* แนะนำใช้ตัวพิมพ์เล็ก (เช่น pack, box)"
+                    />
                   </Grid>
                   <Grid size={6}>
                     <TextField label="ขนาดบรรจุ (ชิ้น/แพ็ค)" type="number" fullWidth value={packSize} onChange={(e) => setPackSize(e.target.value)} />
