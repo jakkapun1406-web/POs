@@ -83,10 +83,15 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
   return (
     <Box
       sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh',
         bgcolor: '#090d16',
         background: 'radial-gradient(circle at 50% 50%, #1e293b 0%, #090d16 100%)',
         p: 2,
@@ -95,9 +100,9 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
       <Paper
         elevation={24}
         sx={{
-          p: 4,
+          p: 3,
           width: '100%',
-          maxWidth: 400,
+          maxWidth: 380,
           borderRadius: 5,
           textAlign: 'center',
           bgcolor: 'rgba(15, 23, 42, 0.65)',
@@ -107,10 +112,10 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
         }}
       >
         <Typography 
-          variant="h4" 
+          variant="h5" 
           sx={{ 
             fontWeight: 900, 
-            mb: 1.5, 
+            mb: 0.5, 
             fontFamily: 'Outfit',
             background: 'linear-gradient(45deg, #60a5fa 30%, #3b82f6 90%)',
             WebkitBackgroundClip: 'text',
@@ -121,7 +126,7 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           ⚡ GROCERY POS
         </Typography>
 
-        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3.5, fontWeight: 'medium' }}>
+        <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2.5, fontWeight: 'medium' }}>
           ระบบขายสินค้าหน้าร้าน / Grocery Store POS
         </Typography>
 
@@ -130,7 +135,8 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
             severity="error" 
             variant="filled"
             sx={{ 
-              mb: 2.5, 
+              mb: 2, 
+              py: 0.5,
               textAlign: 'left', 
               borderRadius: 2, 
               bgcolor: 'rgba(239, 68, 68, 0.15)', 
@@ -143,7 +149,7 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           </Alert>
         )}
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
+        <FormControl fullWidth sx={{ mb: 2 }} size="small">
           <InputLabel id="employee-select-label" sx={{ color: '#64748b', '&.Mui-focused': { color: '#3b82f6' } }}>เลือกพนักงาน / Cashier</InputLabel>
           <Select
             labelId="employee-select-label"
@@ -151,7 +157,7 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
             label="เลือกพนักงาน / Cashier"
             onChange={(e) => setSelectedEmpId(e.target.value as number)}
             sx={{ 
-              borderRadius: 3,
+              borderRadius: 2.5,
               color: '#fff',
               '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.1)' },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.2)' },
@@ -170,11 +176,11 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
         {/* PIN Dot Display */}
         <Box
           sx={{
-            mb: 3,
-            p: 2,
+            mb: 2.5,
+            p: 1.5,
             bgcolor: '#020617',
-            borderRadius: 3,
-            minHeight: 65,
+            borderRadius: 2.5,
+            minHeight: 52,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -183,7 +189,7 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           }}
         >
           <Typography 
-            variant="h4" 
+            variant="h5" 
             sx={{ 
               letterSpacing: pin ? 10 : 2, 
               fontFamily: 'monospace', 
@@ -197,17 +203,17 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
         </Box>
 
         {/* Keypad Grid */}
-        <Grid container spacing={1.5} sx={{ mb: 3.5 }}>
+        <Grid container spacing={1.2} sx={{ mb: 2.5 }}>
           {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
             <Grid size={4} key={num}>
               <Button
                 fullWidth
                 onClick={() => handleNumberClick(num)}
                 sx={{
-                  py: 1.8,
-                  fontSize: '1.6rem',
+                  py: 1.2,
+                  fontSize: '1.4rem',
                   fontWeight: 800,
-                  borderRadius: 3,
+                  borderRadius: 2.5,
                   bgcolor: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.05)',
                   color: '#e2e8f0',
@@ -231,10 +237,10 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
               fullWidth
               onClick={handleClear}
               sx={{ 
-                py: 1.8, 
-                fontSize: '1.3rem', 
+                py: 1.2, 
+                fontSize: '1.15rem', 
                 fontWeight: 900, 
-                borderRadius: 3, 
+                borderRadius: 2.5, 
                 bgcolor: 'rgba(239, 68, 68, 0.05)',
                 border: '1px solid rgba(239, 68, 68, 0.15)',
                 color: '#f87171',
@@ -257,10 +263,10 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
               fullWidth
               onClick={() => handleNumberClick('0')}
               sx={{
-                py: 1.8,
-                fontSize: '1.6rem',
+                py: 1.2,
+                fontSize: '1.4rem',
                 fontWeight: 800,
-                borderRadius: 3,
+                borderRadius: 2.5,
                 bgcolor: 'rgba(255,255,255,0.02)',
                 border: '1px solid rgba(255,255,255,0.05)',
                 color: '#e2e8f0',
@@ -283,10 +289,10 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
               fullWidth
               onClick={handleBackspace}
               sx={{ 
-                py: 1.8, 
-                fontSize: '1.3rem', 
+                py: 1.2, 
+                fontSize: '1.15rem', 
                 fontWeight: 900, 
-                borderRadius: 3, 
+                borderRadius: 2.5, 
                 bgcolor: 'rgba(245, 158, 11, 0.05)',
                 border: '1px solid rgba(245, 158, 11, 0.15)',
                 color: '#fbbf24',
@@ -312,9 +318,9 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           size="large"
           onClick={handleLogin}
           sx={{
-            py: 2,
-            fontSize: '1.15rem',
-            borderRadius: 3.5,
+            py: 1.6,
+            fontSize: '1.05rem',
+            borderRadius: 3,
             fontWeight: 900,
             background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
             boxShadow: '0px 6px 20px rgba(37, 99, 235, 0.25)',
