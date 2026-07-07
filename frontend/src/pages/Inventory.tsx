@@ -123,8 +123,8 @@ const Inventory: React.FC = () => {
       name: name.trim(),
       category: category.trim().toLowerCase(),
       cost_price: parseFloat(costPrice) || 0,
-      sell_price: parseFloat(sellPrice) || 0,
-      pack_sell_price: packSellPrice.trim() ? parseFloat(packSellPrice) : null,
+      sell_price: Math.round(parseFloat(sellPrice) || 0),
+      pack_sell_price: packSellPrice.trim() ? Math.round(parseFloat(packSellPrice)) : null,
       stock_qty: parseInt(stockQty) || 0,
       base_unit: baseUnit.trim().toLowerCase(),
       pack_unit: packUnit.trim().toLowerCase(),
@@ -271,10 +271,10 @@ const Inventory: React.FC = () => {
                     <Chip label={p.category || 'ทั่วไป'} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.05)', color: '#94a3b8' }} />
                   </TableCell>
                   <TableCell align="right" sx={{ color: '#94a3b8' }}>฿{p.cost_price.toFixed(2)}</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 800, color: '#fff' }}>฿{p.sell_price.toFixed(2)} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>/{p.base_unit}</span></TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 800, color: '#fff' }}>฿{p.sell_price.toFixed(0)} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>/{p.base_unit}</span></TableCell>
                   <TableCell align="right" sx={{ color: '#94a3b8' }}>
                     {p.pack_sell_price ? (
-                      <span><strong>฿{p.pack_sell_price.toFixed(2)}</strong> <span style={{ fontSize: '0.8rem', color: '#64748b' }}>/{p.pack_unit} ({p.pack_size})</span></span>
+                      <span><strong>฿{p.pack_sell_price.toFixed(0)}</strong> <span style={{ fontSize: '0.8rem', color: '#64748b' }}>/{p.pack_unit} ({p.pack_size})</span></span>
                     ) : (
                       <span style={{ color: '#475569' }}>-</span>
                     )}
@@ -377,8 +377,24 @@ const Inventory: React.FC = () => {
                     <TextField label="ขนาดบรรจุ (ชิ้น/แพ็ค)" type="number" fullWidth value={packSize} onChange={(e) => setPackSize(e.target.value)} />
                   </Grid>
                 </Grid>
-                <TextField label="ราคาขายปลีกหน่วยย่อย (ชิ้น)" type="number" fullWidth value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} />
-                <TextField label="ราคาขายส่งยกแพ็ค (ถ้าเว้นไว้ จะคิดราคาปลีก * ขนาดบรรจุ)" type="number" fullWidth value={packSellPrice} onChange={(e) => setPackSellPrice(e.target.value)} />
+                <TextField 
+                  label="ราคาขายปลีกหน่วยย่อย (ชิ้น)" 
+                  type="number" 
+                  fullWidth 
+                  value={sellPrice} 
+                  onChange={(e) => setSellPrice(e.target.value)} 
+                  slotProps={{ htmlInput: { step: 1 } }}
+                  helperText="* ต้องเป็นจำนวนเต็มไม่มีจุดทศนิยม (เช่น 10, 20)"
+                />
+                <TextField 
+                  label="ราคาขายส่งยกแพ็ค (ถ้าเว้นไว้ จะคิดราคาปลีก * ขนาดบรรจุ)" 
+                  type="number" 
+                  fullWidth 
+                  value={packSellPrice} 
+                  onChange={(e) => setPackSellPrice(e.target.value)} 
+                  slotProps={{ htmlInput: { step: 1 } }}
+                  helperText="* ต้องเป็นจำนวนเต็มไม่มีจุดทศนิยม"
+                />
               </Box>
             </Grid>
 

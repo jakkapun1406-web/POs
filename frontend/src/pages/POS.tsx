@@ -529,7 +529,7 @@ const POS: React.FC = () => {
                             onClick={() => handleRequestOverride('price', index)}
                             sx={{ color: '#60a5fa', textTransform: 'none', fontWeight: 800, fontSize: '0.9rem', py: 0 }}
                           >
-                            ฿{item.unit_price.toFixed(2)}
+                            ฿{item.unit_price.toFixed(0)}
                           </Button>
                         </TableCell>
                         <TableCell align="center">

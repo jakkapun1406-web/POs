@@ -83,6 +83,9 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), curren
         
     product_data = product.dict()
     product_data["barcode"] = barcode_lower
+    product_data["sell_price"] = int(round(product_data["sell_price"]))
+    if product_data["pack_sell_price"] is not None:
+        product_data["pack_sell_price"] = int(round(product_data["pack_sell_price"]))
     
     db_product = Product(**product_data)
     db.add(db_product)
@@ -112,6 +115,9 @@ def update_product(product_id: int, product_data: ProductUpdate, db: Session = D
     # Update fields
     updated_dict = product_data.dict()
     updated_dict["barcode"] = barcode_lower
+    updated_dict["sell_price"] = int(round(updated_dict["sell_price"]))
+    if updated_dict["pack_sell_price"] is not None:
+        updated_dict["pack_sell_price"] = int(round(updated_dict["pack_sell_price"]))
     
     for key, value in updated_dict.items():
         setattr(db_product, key, value)
