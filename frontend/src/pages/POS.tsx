@@ -701,25 +701,25 @@ const POS: React.FC = () => {
             </Box>
 
             {/* Payment buttons */}
-            <ButtonGroup fullWidth size="small" sx={{ mb: 1.5, '& .MuiButton-root': { py: 1, fontSize: '0.8rem' } }}>
+            <ButtonGroup fullWidth sx={{ mb: 2, '& .MuiButton-root': { py: 1.8, fontSize: '1.05rem', fontWeight: 900 } }}>
               <Button 
                 variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
                 onClick={() => setPaymentType('cash')}
-                startIcon={<LocalAtmIcon fontSize="small" />}
+                startIcon={<LocalAtmIcon />}
               >
                 เงินสด
               </Button>
               <Button 
                 variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
                 onClick={() => setPaymentType('qr')}
-                startIcon={<QrCodeScannerIcon fontSize="small" />}
+                startIcon={<QrCodeScannerIcon />}
               >
                 สแกน QR
               </Button>
               <Button 
                 variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
                 onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
-                startIcon={<PointOfSaleIcon fontSize="small" />}
+                startIcon={<PointOfSaleIcon />}
               >
                 เป๋าตัง
               </Button>
@@ -727,21 +727,30 @@ const POS: React.FC = () => {
 
             {/* Cash details and Thai banknote buttons */}
             {paymentType === 'cash' && (
-              <Box sx={{ mb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+              <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <TextField
                   label="รับเงินสดมา (Cash Received)"
                   variant="outlined"
                   type="number"
                   fullWidth
-                  size="small"
                   value={cashReceived}
                   onChange={(e) => setCashReceived(e.target.value)}
                   autoComplete="off"
-                  slotProps={{ htmlInput: { style: { fontSize: '1.15rem', fontWeight: 800, color: '#fff', textAlign: 'right' } } }}
+                  slotProps={{ 
+                    htmlInput: { 
+                      style: { 
+                        fontSize: '1.6rem', 
+                        fontWeight: 900, 
+                        color: '#fff', 
+                        textAlign: 'right',
+                        padding: '12px 14px' 
+                      } 
+                    } 
+                  }}
                 />
                 
-                {/* Banknote Buttons styled like Thai bills */}
-                <Grid container spacing={0.6}>
+                {/* Banknote Buttons styled like Thai bills - 2 rows of 3 columns */}
+                <Grid container spacing={1}>
                   {[
                     { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
                     { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
@@ -749,10 +758,9 @@ const POS: React.FC = () => {
                     { value: 500, bg: '#3b0764', color: '#c084fc', label: '500' },
                     { value: 1000, bg: '#292524', color: '#f4ebe4', label: '1,000' }
                   ].map(b => (
-                    <Grid size={2.4} key={b.value}>
+                    <Grid size={4} key={b.value}>
                       <Button 
                         fullWidth 
-                        size="small"
                         onClick={() => {
                           const currentVal = parseFloat(cashReceived) || 0;
                           setCashReceived((currentVal + b.value).toString());
@@ -760,11 +768,11 @@ const POS: React.FC = () => {
                         sx={{ 
                           bgcolor: b.bg, 
                           color: b.color, 
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold',
-                          py: 0.8, 
-                          borderRadius: 1.5,
-                          border: `1px solid ${b.color}33`,
+                          fontSize: '1rem',
+                          fontWeight: 900,
+                          py: 1.4, 
+                          borderRadius: 2,
+                          border: `1px solid ${b.color}44`,
                           '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
                         }}
                       >
@@ -772,22 +780,40 @@ const POS: React.FC = () => {
                       </Button>
                     </Grid>
                   ))}
+                  {/* Clear Button */}
+                  <Grid size={4}>
+                    <Button 
+                      fullWidth 
+                      onClick={() => setCashReceived('')}
+                      sx={{ 
+                        bgcolor: '#1e293b', 
+                        color: '#ef4444', 
+                        fontSize: '1rem',
+                        fontWeight: 900,
+                        py: 1.4, 
+                        borderRadius: 2,
+                        border: '1px solid rgba(239,68,68,0.2)',
+                        '&:hover': { bgcolor: '#334155' }
+                      }}
+                    >
+                      ล้างยอด (C)
+                    </Button>
+                  </Grid>
                   <Grid size={12}>
                     <Button 
                       fullWidth 
                       variant="outlined" 
-                      size="small"
                       onClick={() => setCashReceived(customerPortion.toString())}
-                      sx={{ py: 0.5, fontSize: '0.7rem', color: '#64748b', borderColor: 'rgba(255,255,255,0.06)' }}
+                      sx={{ py: 1, fontSize: '0.85rem', fontWeight: 'bold', color: '#94a3b8', borderColor: 'rgba(255,255,255,0.08)' }}
                     >
-                      รับเงินสดพอดีคิดบิล (Exact: ฿{customerPortion.toFixed(2)})
+                      รับเงินสดพอดีดีดบิล (Exact: ฿{customerPortion.toFixed(0)})
                     </Button>
                   </Grid>
                 </Grid>
 
-                <Box sx={{ p: 1.5, bgcolor: '#020617', borderRadius: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.06)' }}>
-                  <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#10b981', fontFamily: 'Outfit' }}>
+                <Box sx={{ p: 2, bgcolor: '#020617', borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.08)' }}>
+                  <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 900, color: '#10b981', fontFamily: 'Outfit' }}>
                     ฿{computedChange.toFixed(2)}
                   </Typography>
                 </Box>
@@ -802,13 +828,13 @@ const POS: React.FC = () => {
               color="success"
               onClick={handleCheckout}
               sx={{ 
-                py: 1.8, 
-                fontSize: '1.15rem', 
+                py: 2.8, 
+                fontSize: '1.4rem', 
                 fontWeight: 900, 
-                borderRadius: 3.5,
+                borderRadius: 4,
                 bgcolor: '#10b981',
-                boxShadow: '0 4px 15px rgba(16,185,129,0.2)',
-                '&:hover': { bgcolor: '#059669', boxShadow: '0 4px 20px rgba(16,185,129,0.4)' }
+                boxShadow: '0 4px 20px rgba(16,185,129,0.3)',
+                '&:hover': { bgcolor: '#059669', boxShadow: '0 4px 25px rgba(16,185,129,0.5)', transform: 'scale(1.01)' }
               }}
             >
               ชำระเงินบิลนี้ (PAY NOW)
