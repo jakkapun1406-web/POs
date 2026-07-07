@@ -1,0 +1,19 @@
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+backend/pos.db
+.pytest_cache/
+.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
