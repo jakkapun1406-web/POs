@@ -332,7 +332,7 @@ const Inventory: React.FC = () => {
                   fullWidth 
                   value={barcode} 
                   onChange={(e) => setBarcode(e.target.value)} 
-                  helperText="* แนะนำใช้ภาษาอังกฤษตัวเล็กเท่านั้น (เช่น singha) เพื่อป้องกันข้อผิดพลาดการสแกนคิดเงิน"
+                  helperText="* แนะนำให้กรอกเป็นตัวเลขบาร์โค้ดสินค้า หรือตัวเลขรหัสด่วน (เช่น 050)"
                 />
                 <TextField label="ชื่อสินค้า / Product Name" fullWidth value={name} onChange={(e) => setName(e.target.value)} />
                 <TextField 
@@ -340,7 +340,7 @@ const Inventory: React.FC = () => {
                   fullWidth 
                   value={category} 
                   onChange={(e) => setCategory(e.target.value)} 
-                  helperText="* แนะนำใช้ตัวพิมพ์เล็ก (เช่น drink, snack) เพื่อสถิติที่ถูกต้อง"
+                  helperText="* แนะนำให้พิมพ์หมวดหมู่เป็นภาษาไทย (เช่น เครื่องดื่ม, ของแห้ง, ขนม)"
                 />
                 <Grid container spacing={2}>
                   <Grid size={6}>
@@ -349,7 +349,7 @@ const Inventory: React.FC = () => {
                       fullWidth 
                       value={baseUnit} 
                       onChange={(e) => setBaseUnit(e.target.value)} 
-                      helperText="* แนะนำใช้ตัวพิมพ์เล็ก (เช่น pcs, bottle)"
+                      helperText="* แนะนำให้พิมพ์เป็นภาษาไทย (เช่น ชิ้น, ขวด, กระป๋อง)"
                     />
                   </Grid>
                   <Grid size={6}>
@@ -370,7 +370,7 @@ const Inventory: React.FC = () => {
                       fullWidth 
                       value={packUnit} 
                       onChange={(e) => setPackUnit(e.target.value)} 
-                      helperText="* แนะนำใช้ตัวพิมพ์เล็ก (เช่น pack, box)"
+                      helperText="* แนะนำให้พิมพ์เป็นภาษาไทย (เช่น แพ็ค, กล่อง, โหล)"
                     />
                   </Grid>
                   <Grid size={6}>
