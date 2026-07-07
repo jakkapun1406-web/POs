@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, Paper, Grid, MenuItem, Select, FormControl, InputLabel, Alert } from '@mui/material';
+import { Box, Button, Typography, Paper, Grid, MenuItem, Select, FormControl, InputLabel, Alert, Divider } from '@mui/material';
 import api from '../services/api';
 
 interface Employee {
@@ -86,44 +86,82 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '85vh',
-        bgcolor: '#f5f5f5',
+        minHeight: '100vh',
+        bgcolor: '#090d16',
+        background: 'radial-gradient(circle at 50% 50%, #1e293b 0%, #090d16 100%)',
         p: 2,
       }}
     >
       <Paper
-        elevation={6}
+        elevation={24}
         sx={{
           p: 4,
           width: '100%',
           maxWidth: 400,
-          borderRadius: 4,
+          borderRadius: 5,
           textAlign: 'center',
-          boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.08)',
+          bgcolor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: '#1976d2' }}>
-          ระบบขายสินค้าหน้าร้าน (POS)
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontWeight: 900, 
+            mb: 1.5, 
+            fontFamily: 'Outfit',
+            background: 'linear-gradient(45deg, #60a5fa 30%, #3b82f6 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 0 15px rgba(59, 130, 246, 0.2)'
+          }}
+        >
+          ⚡ GROCERY POS
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3.5, fontWeight: 'medium' }}>
+          ระบบขายสินค้าหน้าร้าน / Grocery Store POS
         </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2, textAlign: 'left' }}>
+          <Alert 
+            severity="error" 
+            variant="filled"
+            sx={{ 
+              mb: 2.5, 
+              textAlign: 'left', 
+              borderRadius: 2, 
+              bgcolor: 'rgba(239, 68, 68, 0.15)', 
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              '& .MuiAlert-icon': { color: '#f87171' }
+            }}
+          >
             {error}
           </Alert>
         )}
 
         <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel id="employee-select-label">เลือกพนักงาน / Cashier</InputLabel>
+          <InputLabel id="employee-select-label" sx={{ color: '#64748b', '&.Mui-focused': { color: '#3b82f6' } }}>เลือกพนักงาน / Cashier</InputLabel>
           <Select
             labelId="employee-select-label"
             value={selectedEmpId}
             label="เลือกพนักงาน / Cashier"
             onChange={(e) => setSelectedEmpId(e.target.value as number)}
-            sx={{ borderRadius: 2 }}
+            sx={{ 
+              borderRadius: 3,
+              color: '#fff',
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+              '& .MuiSvgIcon-root': { color: '#64748b' }
+            }}
           >
             {employees.map((emp) => (
               <MenuItem key={emp.id} value={emp.id}>
-                {emp.name} ({emp.role === 'admin' ? 'แอดมิน' : 'พนักงาน'})
+                {emp.name} ({emp.role === 'admin' ? 'ผู้จัดการแอดมิน' : 'พนักงานแคชเชียร์'})
               </MenuItem>
             ))}
           </Select>
@@ -132,39 +170,56 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
         {/* PIN Dot Display */}
         <Box
           sx={{
-            mb: 4,
+            mb: 3,
             p: 2,
-            bgcolor: '#e0e0e0',
-            borderRadius: 2,
-            minHeight: 60,
+            bgcolor: '#020617',
+            borderRadius: 3,
+            minHeight: 65,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            border: '1px solid rgba(59, 130, 246, 0.15)',
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.8)'
           }}
         >
-          <Typography variant="h4" sx={{ letterSpacing: 8, fontFamily: 'monospace' }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              letterSpacing: pin ? 10 : 2, 
+              fontFamily: 'monospace', 
+              fontWeight: 900, 
+              color: pin ? '#60a5fa' : '#475569',
+              textShadow: pin ? '0 0 10px rgba(96, 165, 250, 0.5)' : 'none'
+            }}
+          >
             {pin ? '•'.repeat(pin.length) : 'ใส่รหัส PIN'}
           </Typography>
         </Box>
 
         {/* Keypad Grid */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid container spacing={1.5} sx={{ mb: 3.5 }}>
           {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
             <Grid size={4} key={num}>
               <Button
                 fullWidth
-                variant="outlined"
                 onClick={() => handleNumberClick(num)}
                 sx={{
-                  py: 2,
-                  fontSize: '1.5rem',
-                  borderRadius: 2,
-                  borderColor: '#bdbdbd',
-                  color: '#424242',
+                  py: 1.8,
+                  fontSize: '1.6rem',
+                  fontWeight: 800,
+                  borderRadius: 3,
+                  bgcolor: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  color: '#e2e8f0',
+                  fontFamily: 'Outfit',
                   '&:hover': {
-                    bgcolor: '#eeeeee',
-                    borderColor: '#1976d2',
+                    bgcolor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: '#3b82f6',
+                    color: '#fff',
+                    transform: 'scale(1.02)'
                   },
+                  '&:active': { transform: 'scale(0.98)' },
+                  transition: 'all 0.15s ease'
                 }}
               >
                 {num}
@@ -174,10 +229,25 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           <Grid size={4}>
             <Button
               fullWidth
-              variant="outlined"
-              color="error"
               onClick={handleClear}
-              sx={{ py: 2, fontSize: '1.25rem', borderRadius: 2 }}
+              sx={{ 
+                py: 1.8, 
+                fontSize: '1.3rem', 
+                fontWeight: 900, 
+                borderRadius: 3, 
+                bgcolor: 'rgba(239, 68, 68, 0.05)',
+                border: '1px solid rgba(239, 68, 68, 0.15)',
+                color: '#f87171',
+                fontFamily: 'Outfit',
+                '&:hover': {
+                  bgcolor: 'rgba(239, 68, 68, 0.15)',
+                  borderColor: '#ef4444',
+                  color: '#fff',
+                  transform: 'scale(1.02)'
+                },
+                '&:active': { transform: 'scale(0.98)' },
+                transition: 'all 0.15s ease'
+              }}
             >
               C
             </Button>
@@ -185,15 +255,24 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           <Grid size={4}>
             <Button
               fullWidth
-              variant="outlined"
               onClick={() => handleNumberClick('0')}
               sx={{
-                py: 2,
-                fontSize: '1.5rem',
-                borderRadius: 2,
-                borderColor: '#bdbdbd',
-                color: '#424242',
-                '&:hover': { bgcolor: '#eeeeee' },
+                py: 1.8,
+                fontSize: '1.6rem',
+                fontWeight: 800,
+                borderRadius: 3,
+                bgcolor: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                color: '#e2e8f0',
+                fontFamily: 'Outfit',
+                '&:hover': {
+                  bgcolor: 'rgba(59, 130, 246, 0.1)',
+                  borderColor: '#3b82f6',
+                  color: '#fff',
+                  transform: 'scale(1.02)'
+                },
+                '&:active': { transform: 'scale(0.98)' },
+                transition: 'all 0.15s ease'
               }}
             >
               0
@@ -202,9 +281,25 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           <Grid size={4}>
             <Button
               fullWidth
-              variant="outlined"
               onClick={handleBackspace}
-              sx={{ py: 2, fontSize: '1.25rem', borderRadius: 2, color: '#616161' }}
+              sx={{ 
+                py: 1.8, 
+                fontSize: '1.3rem', 
+                fontWeight: 900, 
+                borderRadius: 3, 
+                bgcolor: 'rgba(245, 158, 11, 0.05)',
+                border: '1px solid rgba(245, 158, 11, 0.15)',
+                color: '#fbbf24',
+                fontFamily: 'Outfit',
+                '&:hover': {
+                  bgcolor: 'rgba(245, 158, 11, 0.15)',
+                  borderColor: '#f59e0b',
+                  color: '#fff',
+                  transform: 'scale(1.02)'
+                },
+                '&:active': { transform: 'scale(0.98)' },
+                transition: 'all 0.15s ease'
+              }}
             >
               ⌫
             </Button>
@@ -218,10 +313,20 @@ const PinPad: React.FC<PinPadProps> = ({ onLoginSuccess }) => {
           onClick={handleLogin}
           sx={{
             py: 2,
-            fontSize: '1.1rem',
-            borderRadius: 2,
-            fontWeight: 'bold',
-            boxShadow: '0px 4px 10px rgba(25, 118, 210, 0.3)',
+            fontSize: '1.15rem',
+            borderRadius: 3.5,
+            fontWeight: 900,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            boxShadow: '0px 6px 20px rgba(37, 99, 235, 0.25)',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+            '&:hover': {
+              background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+              boxShadow: '0px 8px 25px rgba(37, 99, 235, 0.4)',
+              transform: 'scale(1.01)'
+            },
+            '&:active': { transform: 'scale(0.99)' },
+            transition: 'all 0.15s ease'
           }}
         >
           เข้าสู่ระบบ (LOGIN)
