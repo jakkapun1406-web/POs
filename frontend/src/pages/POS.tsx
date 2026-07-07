@@ -14,7 +14,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import api from '../services/api';
@@ -179,10 +178,8 @@ const POS: React.FC = () => {
     showTimeAlert('success', `เพิ่ม ${product.name} เข้ารถเข็น`);
   };
 
-  // Add Item Instantly (For quick buttons: Bag, Ice, Egg, etc.)
   const handleQuickAdd = (name: string, price: number, unit: string = 'ชิ้น') => {
     setCart((prevCart) => {
-      // Find if quick item already in cart
       const idx = prevCart.findIndex(item => item.product_id === null && item.name === name && item.unit_price === price);
       if (idx > -1) {
         const updated = [...prevCart];
@@ -453,7 +450,7 @@ const POS: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ height: 'calc(100vh - 90px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {alertMsg && (
         <Alert 
           severity={alertMsg.type} 
@@ -463,13 +460,13 @@ const POS: React.FC = () => {
         </Alert>
       )}
 
-      <Grid container spacing={3}>
-        {/* Left Area: Scanning, cart, and quick items */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Paper elevation={0} sx={{ p: 3, height: '82vh', display: 'flex', flexDirection: 'column', bgcolor: '#0f172a' }}>
+      <Grid container spacing={1.5} sx={{ height: '100%', overflow: 'hidden' }}>
+        {/* Left Side: Cart & Quick item - zero scroll layout */}
+        <Grid size={{ xs: 12, md: 8 }} sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: '#0f172a' }}>
             
-            {/* Scanner search row */}
-            <Box component="form" onSubmit={handleBarcodeSubmit} sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
+            {/* Search Input (Fixed height) */}
+            <Box component="form" onSubmit={handleBarcodeSubmit} sx={{ display: 'flex', gap: 1, mb: 1.5, height: 48, flexShrink: 0 }}>
               <TextField
                 inputRef={barcodeInputRef}
                 fullWidth
@@ -478,21 +475,23 @@ const POS: React.FC = () => {
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
                 autoComplete="off"
+                size="small"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     bgcolor: 'rgba(255,255,255,0.03)',
-                    fontSize: '1.1rem',
+                    height: 48,
+                    fontSize: '1rem',
                   }
                 }}
               />
-              <Button type="submit" variant="contained" color="primary" sx={{ px: 4, borderRadius: 3 }}>
+              <Button type="submit" variant="contained" color="primary" sx={{ px: 3, borderRadius: 3, height: '100%' }}>
                 ค้นหา
               </Button>
             </Box>
 
-            {/* Cart Table Area */}
-            <TableContainer sx={{ flexGrow: 1, overflowY: 'auto', mb: 2, border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3, bgcolor: 'rgba(0,0,0,0.1)' }}>
-              <Table stickyHeader size="medium">
+            {/* Cart Table (Scrollable container taking remaining space) */}
+            <TableContainer sx={{ flexGrow: 1, overflowY: 'auto', mb: 1.5, border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3, bgcolor: 'rgba(0,0,0,0.1)' }}>
+              <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell>สินค้า</TableCell>
@@ -506,60 +505,54 @@ const POS: React.FC = () => {
                 <TableBody>
                   {cart.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 10, color: '#64748b' }}>
-                        <ShoppingCartIcon sx={{ fontSize: 60, mb: 2, opacity: 0.3 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>ยังไม่มีสินค้าในตะกร้า</Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.8 }}>ยิงบาร์โค้ด หรือใช้แผงกดสินค้าด่วนด้านล่างเพื่อเริ่มขาย</Typography>
+                      <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#64748b' }}>
+                        <ShoppingCartIcon sx={{ fontSize: 50, mb: 1, opacity: 0.3 }} />
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>ยังไม่มีสินค้าในตะกร้า</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.8 }}>สแกนบาร์โค้ด หรือใช้แผงกดสินค้าด่วนเพื่อขาย</Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
                     cart.map((item, index) => (
                       <TableRow key={index} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
-                        {/* Name */}
                         <TableCell>
-                          <Typography variant="body1" sx={{ fontWeight: 700, color: '#fff' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#fff' }}>
                             {item.name}
                           </Typography>
                           {item.barcode && (
-                            <Chip label={item.barcode} size="small" variant="outlined" sx={{ height: 18, fontSize: '0.65rem', color: '#94a3b8', mt: 0.5 }} />
+                            <Chip label={item.barcode} size="small" variant="outlined" sx={{ height: 16, fontSize: '0.6rem', color: '#94a3b8', mt: 0.2 }} />
                           )}
                         </TableCell>
-                        
-                        {/* Unit Price */}
                         <TableCell align="center">
                           <Button 
                             variant="text" 
+                            size="small"
                             onClick={() => handleRequestOverride('price', index)}
-                            sx={{ color: '#60a5fa', textTransform: 'none', fontWeight: 800, fontSize: '1rem' }}
+                            sx={{ color: '#60a5fa', textTransform: 'none', fontWeight: 800, fontSize: '0.9rem', py: 0 }}
                           >
                             ฿{item.unit_price.toFixed(2)}
                           </Button>
                         </TableCell>
-                        
-                        {/* Quantity */}
                         <TableCell align="center">
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <IconButton 
                               size="small" 
                               onClick={() => handleUpdateQty(index, item.sold_qty - 1)}
-                              sx={{ border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#fff' } }}
+                              sx={{ p: 0.3, border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8' }}
                             >
                               <RemoveIcon fontSize="small" />
                             </IconButton>
-                            <Typography sx={{ minWidth: 35, fontWeight: 850, fontSize: '1.05rem', color: '#fff', textAlign: 'center' }}>
+                            <Typography sx={{ minWidth: 28, fontWeight: 800, fontSize: '0.95rem', color: '#fff', textAlign: 'center' }}>
                               {item.sold_qty}
                             </Typography>
                             <IconButton 
                               size="small" 
                               onClick={() => handleUpdateQty(index, item.sold_qty + 1)}
-                              sx={{ border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#fff' } }}
+                              sx={{ p: 0.3, border: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8' }}
                             >
                               <AddIcon fontSize="small" />
                             </IconButton>
                           </Box>
                         </TableCell>
-
-                        {/* Unit Toggle */}
                         <TableCell align="center">
                           {item.product_id ? (
                             <Button 
@@ -568,32 +561,29 @@ const POS: React.FC = () => {
                               onClick={() => handleTogglePack(index)}
                               sx={{ 
                                 textTransform: 'none', 
-                                fontWeight: 700,
-                                borderRadius: 2.5,
+                                fontWeight: 750,
+                                borderRadius: 2,
+                                py: 0,
+                                fontSize: '0.75rem',
                                 color: item.is_pack ? '#10b981' : '#94a3b8',
-                                borderColor: item.is_pack ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)',
-                                bgcolor: item.is_pack ? 'rgba(16,185,129,0.08)' : 'transparent',
-                                '&:hover': { bgcolor: item.is_pack ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)' }
+                                borderColor: item.is_pack ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)',
+                                bgcolor: item.is_pack ? 'rgba(16,185,129,0.05)' : 'transparent',
                               }}
                             >
                               {item.sold_unit}
                             </Button>
                           ) : (
-                            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
                               {item.sold_unit}
                             </Typography>
                           )}
                         </TableCell>
-
-                        {/* Subtotal */}
-                        <TableCell align="right" sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>
+                        <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#fff' }}>
                           ฿{item.subtotal.toFixed(2)}
                         </TableCell>
-
-                        {/* Delete button */}
                         <TableCell align="center">
-                          <IconButton color="error" size="small" onClick={() => handleRemoveItem(index)}>
-                            <DeleteIcon />
+                          <IconButton color="error" size="small" onClick={() => handleRemoveItem(index)} sx={{ p: 0.5 }}>
+                            <DeleteIcon fontSize="small" />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -603,19 +593,21 @@ const POS: React.FC = () => {
               </Table>
             </TableContainer>
 
-            {/* Quick unbarcoded items grid */}
-            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#94a3b8' }}>⚡ รายการสินค้าด่วนยอดนิยม / Quick Items</Typography>
-            <Grid container spacing={1} sx={{ mb: 2.5 }}>
+            {/* Quick Item Grid (Fixed height) */}
+            <Typography variant="caption" sx={{ mb: 0.5, fontWeight: 'bold', color: '#94a3b8', display: 'block', flexShrink: 0 }}>
+              ⚡ รายการด่วนยอดนิยม / Quick Items
+            </Typography>
+            <Grid container spacing={0.8} sx={{ mb: 1.5, flexShrink: 0 }}>
               {[
                 { name: 'ถุงหิ้วพลาสติก', price: 1, unit: 'ใบ', color: '#475569' },
                 { name: 'น้ำแข็งเปล่า', price: 2, unit: 'แก้ว', color: '#0891b2' },
                 { name: 'ไข่ไก่ดิบ', price: 5, unit: 'ฟอง', color: '#b45309' },
-                { name: 'สินค้าทั่วไป 10 บ.', price: 10, unit: 'ชิ้น', color: '#0f766e' },
-                { name: 'สินค้าทั่วไป 20 บ.', price: 20, unit: 'ชิ้น', color: '#1d4ed8' },
-                { name: 'สินค้าทั่วไป 50 บ.', price: 50, unit: 'ชิ้น', color: '#701a75' },
-                { name: 'สินค้าทั่วไป 100 บ.', price: 100, unit: 'ชิ้น', color: '#4c1d95' }
+                { name: 'สินค้าด่วน 10 บ.', price: 10, unit: 'ชิ้น', color: '#0f766e' },
+                { name: 'สินค้าด่วน 20 บ.', price: 20, unit: 'ชิ้น', color: '#1d4ed8' },
+                { name: 'สินค้าด่วน 50 บ.', price: 50, unit: 'ชิ้น', color: '#701a75' },
+                { name: 'สินค้าด่วน 100 บ.', price: 100, unit: 'ชิ้น', color: '#4c1d95' }
               ].map((q) => (
-                <Grid size={{ xs: 3, sm: 1.7 }} key={q.name}>
+                <Grid size={{ xs: 3, sm: 1.71 }} key={q.name}>
                   <Button
                     fullWidth
                     variant="contained"
@@ -623,9 +615,9 @@ const POS: React.FC = () => {
                     onClick={() => handleQuickAdd(q.name, q.price, q.unit)}
                     sx={{
                       bgcolor: q.color,
-                      fontSize: '0.75rem',
-                      py: 1,
-                      borderRadius: 2.5,
+                      fontSize: '0.7rem',
+                      py: 0.8,
+                      borderRadius: 2,
                       boxShadow: 'none',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -639,33 +631,36 @@ const POS: React.FC = () => {
               ))}
             </Grid>
 
-            {/* Hold action controls */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            {/* Bottom holds controls (Fixed height) */}
+            <Box sx={{ display: 'flex', gap: 1, height: 42, flexShrink: 0 }}>
               <Button 
                 variant="outlined" 
                 color="warning" 
-                startIcon={<PauseIcon />}
+                size="small"
+                startIcon={<PauseIcon fontSize="small" />}
                 onClick={handleOpenSuspend}
                 disabled={cart.length === 0}
-                sx={{ py: 1.5, flexGrow: 1, borderRadius: 3 }}
+                sx={{ flexGrow: 1, borderRadius: 2.5 }}
               >
                 พักบิล
               </Button>
               <Button 
                 variant="outlined" 
                 color="info" 
-                startIcon={<PlayArrowIcon />}
+                size="small"
+                startIcon={<PlayArrowIcon fontSize="small" />}
                 onClick={() => { loadSuspendedBills(); setResumeOpen(true); }}
-                sx={{ py: 1.5, flexGrow: 1, borderRadius: 3 }}
+                sx={{ flexGrow: 1, borderRadius: 2.5 }}
               >
-                ดึงบิลที่พักไว้ ({suspendedBills.length})
+                ดึงบิลพัก ({suspendedBills.length})
               </Button>
               <Button 
                 variant="outlined" 
                 color="primary" 
-                startIcon={<LockOpenIcon />}
+                size="small"
+                startIcon={<LockOpenIcon fontSize="small" />}
                 onClick={() => handleRequestOverride('drawer')}
-                sx={{ py: 1.5, flexGrow: 1, borderRadius: 3 }}
+                sx={{ flexGrow: 1, borderRadius: 2.5 }}
               >
                 ดีดลิ้นชัก
               </Button>
@@ -673,36 +668,33 @@ const POS: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Right Area: Checkout sidebar */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper elevation={0} sx={{ p: 3.5, height: '82vh', display: 'flex', flexDirection: 'column', bgcolor: '#0f172a' }}>
-            <Typography variant="h6" align="center" sx={{ fontWeight: 800, mb: 3, letterSpacing: '0.05em', color: '#94a3b8' }}>
-              หน้าจอชำระเงิน
-            </Typography>
-
+        {/* Right Side: Total Summary / Checkout controls - zero scroll layout */}
+        <Grid size={{ xs: 12, md: 4 }} sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: '#0f172a' }}>
+            
             {/* Glowing neon total screen */}
             <Box 
               sx={{ 
-                mb: 3.5, 
-                p: 3, 
+                mb: 1.5, 
+                p: 1.8, 
                 bgcolor: '#020617', 
-                borderRadius: 4, 
+                borderRadius: 3.5, 
                 textAlign: 'center', 
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(59, 130, 246, 0.15)'
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.8), 0 0 15px rgba(59, 130, 246, 0.1)'
               }}
             >
-              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                ยอดชำระเงินทั้งหมด / Grand Total
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                ยอดชำระทั้งหมด / Grand Total
               </Typography>
               <Typography 
-                variant="h2" 
+                variant="h3" 
                 sx={{ 
                   fontWeight: 900, 
                   color: '#3b82f6', 
-                  mt: 1.5,
+                  mt: 0.5,
                   fontFamily: 'Outfit',
-                  textShadow: '0 0 10px rgba(59, 130, 246, 0.4)'
+                  textShadow: '0 0 8px rgba(59, 130, 246, 0.4)'
                 }}
               >
                 ฿{totalCartAmount.toFixed(2)}
@@ -710,33 +702,35 @@ const POS: React.FC = () => {
             </Box>
 
             {/* Welfare toggle config */}
-            <Box sx={{ mb: 3, p: 2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, bgcolor: 'rgba(255,255,255,0.01)' }}>
+            <Box sx={{ mb: 1.5, p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
               <FormControlLabel
                 control={
                   <Switch 
                     checked={useWelfare} 
                     onChange={(e) => setUseWelfare(e.target.checked)} 
                     color="secondary"
+                    size="small"
                   />
                 }
-                label={<strong style={{ color: '#e2e8f0' }}>สิทธิ์สวัสดิการรัฐ (คนละครึ่ง)</strong>}
+                label={<strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>คนละครึ่ง (สวัสดิการรัฐ)</strong>}
+                sx={{ m: 0 }}
               />
               {useWelfare && (
-                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                    * ช่วยจ่าย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
+                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>
+                    * รัฐช่วย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
                   </Typography>
                   <TextField
-                    label="จำนวนเงินที่รัฐช่วย (บาท)"
+                    label="จำนวนรัฐออกให้"
                     type="number"
                     size="small"
                     value={discountGovt}
                     onChange={(e) => setDiscountGovt(Math.min(totalCartAmount, parseFloat(e.target.value) || 0))}
                   />
-                  <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.08)' }} />
+                  <Divider sx={{ my: 0.5, borderColor: 'rgba(255,255,255,0.06)' }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ color: '#f8fafc' }}>ยอดเก็บเงินสดจริง:</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#ef4444' }}>
+                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>ยอดเก็บสดหน้าร้านจริง:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#ef4444' }}>
                       ฿{(customerPortion).toFixed(2)}
                     </Typography>
                   </Box>
@@ -745,26 +739,25 @@ const POS: React.FC = () => {
             </Box>
 
             {/* Payment buttons */}
-            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#94a3b8' }}>วิธีการชำระเงิน</Typography>
-            <ButtonGroup fullWidth sx={{ mb: 3, '& .MuiButton-root': { py: 1.5 } }}>
+            <ButtonGroup fullWidth size="small" sx={{ mb: 1.5, '& .MuiButton-root': { py: 1, fontSize: '0.8rem' } }}>
               <Button 
                 variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
                 onClick={() => setPaymentType('cash')}
-                startIcon={<LocalAtmIcon />}
+                startIcon={<LocalAtmIcon fontSize="small" />}
               >
                 เงินสด
               </Button>
               <Button 
                 variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
                 onClick={() => setPaymentType('qr')}
-                startIcon={<QrCodeScannerIcon />}
+                startIcon={<QrCodeScannerIcon fontSize="small" />}
               >
                 สแกน QR
               </Button>
               <Button 
                 variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
                 onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
-                startIcon={<PointOfSaleIcon />}
+                startIcon={<PointOfSaleIcon fontSize="small" />}
               >
                 เป๋าตัง
               </Button>
@@ -772,20 +765,21 @@ const POS: React.FC = () => {
 
             {/* Cash details and Thai banknote buttons */}
             {paymentType === 'cash' && (
-              <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ mb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.2 }}>
                 <TextField
                   label="รับเงินสดมา (Cash Received)"
                   variant="outlined"
                   type="number"
                   fullWidth
+                  size="small"
                   value={cashReceived}
                   onChange={(e) => setCashReceived(e.target.value)}
                   autoComplete="off"
-                  slotProps={{ htmlInput: { style: { fontSize: '1.3rem', fontWeight: 800, color: '#fff', textAlign: 'right' } } }}
+                  slotProps={{ htmlInput: { style: { fontSize: '1.15rem', fontWeight: 800, color: '#fff', textAlign: 'right' } } }}
                 />
                 
                 {/* Banknote Buttons styled like Thai bills */}
-                <Grid container spacing={1}>
+                <Grid container spacing={0.6}>
                   {[
                     { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
                     { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
@@ -796,6 +790,7 @@ const POS: React.FC = () => {
                     <Grid size={2.4} key={b.value}>
                       <Button 
                         fullWidth 
+                        size="small"
                         onClick={() => {
                           const currentVal = parseFloat(cashReceived) || 0;
                           setCashReceived((currentVal + b.value).toString());
@@ -803,12 +798,12 @@ const POS: React.FC = () => {
                         sx={{ 
                           bgcolor: b.bg, 
                           color: b.color, 
-                          fontSize: '0.85rem',
+                          fontSize: '0.75rem',
                           fontWeight: 'bold',
-                          py: 1, 
-                          borderRadius: 2,
-                          border: `1px solid ${b.color}44`,
-                          '&:hover': { bgcolor: b.bg, filter: 'brightness(1.25)' }
+                          py: 0.8, 
+                          borderRadius: 1.5,
+                          border: `1px solid ${b.color}33`,
+                          '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
                         }}
                       >
                         +{b.label}
@@ -819,17 +814,18 @@ const POS: React.FC = () => {
                     <Button 
                       fullWidth 
                       variant="outlined" 
+                      size="small"
                       onClick={() => setCashReceived(customerPortion.toString())}
-                      sx={{ py: 0.8, fontSize: '0.8rem', color: '#94a3b8', borderColor: 'rgba(255,255,255,0.1)' }}
+                      sx={{ py: 0.5, fontSize: '0.7rem', color: '#64748b', borderColor: 'rgba(255,255,255,0.06)' }}
                     >
-                      รับเงินสดพอดีดีดบิล (Exact cash: ฿{customerPortion.toFixed(2)})
+                      รับเงินสดพอดีคิดบิล (Exact: ฿{customerPortion.toFixed(2)})
                     </Button>
                   </Grid>
                 </Grid>
 
-                <Box sx={{ p: 2, bgcolor: '#020617', borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.1)' }}>
-                  <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900, color: '#10b981' }}>
+                <Box sx={{ p: 1.5, bgcolor: '#020617', borderRadius: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.06)' }}>
+                  <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#10b981', fontFamily: 'Outfit' }}>
                     ฿{computedChange.toFixed(2)}
                   </Typography>
                 </Box>
@@ -842,19 +838,18 @@ const POS: React.FC = () => {
               fullWidth
               variant="contained"
               color="success"
-              size="large"
               onClick={handleCheckout}
               sx={{ 
-                py: 2.2, 
-                fontSize: '1.25rem', 
+                py: 1.8, 
+                fontSize: '1.15rem', 
                 fontWeight: 900, 
-                borderRadius: 4,
+                borderRadius: 3.5,
                 bgcolor: '#10b981',
-                boxShadow: '0 4px 20px rgba(16,185,129,0.25)',
-                '&:hover': { bgcolor: '#059669', boxShadow: '0 4px 25px rgba(16,185,129,0.45)' }
+                boxShadow: '0 4px 15px rgba(16,185,129,0.2)',
+                '&:hover': { bgcolor: '#059669', boxShadow: '0 4px 20px rgba(16,185,129,0.4)' }
               }}
             >
-              ยืนยันรับเงิน (CHECKOUT)
+              ชำระเงินบิลนี้ (PAY NOW)
             </Button>
           </Paper>
         </Grid>
