@@ -663,25 +663,25 @@ const POS: React.FC = () => {
              </Box>
 
              {/* Payment Type Selection (Fixed height) */}
-             <ButtonGroup fullWidth sx={{ mb: 1.5, '& .MuiButton-root': { py: 1.3, fontSize: '0.9rem', fontWeight: 900 } }}>
+             <ButtonGroup fullWidth sx={{ mb: 1.0, '& .MuiButton-root': { py: 0.9, fontSize: '0.85rem', fontWeight: 900 } }}>
                <Button 
                  variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
                  onClick={() => { setPaymentType('cash'); setUseWelfare(false); }}
-                 startIcon={<LocalAtmIcon />}
+                 startIcon={<LocalAtmIcon fontSize="small" />}
                >
                  เงินสด
                </Button>
                <Button 
                  variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
                  onClick={() => { setPaymentType('qr'); setUseWelfare(false); }}
-                 startIcon={<QrCodeScannerIcon />}
+                 startIcon={<QrCodeScannerIcon fontSize="small" />}
                >
                  สแกน QR
                </Button>
                <Button 
                  variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
                  onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
-                 startIcon={<PointOfSaleIcon />}
+                 startIcon={<PointOfSaleIcon fontSize="small" />}
                >
                  เป๋าตัง
                </Button>
@@ -689,7 +689,7 @@ const POS: React.FC = () => {
 
              {/* Welfare Toggle config - ONLY shown when govt_welfare (เป๋าตัง) is active */}
              {paymentType === 'govt_welfare' && (
-               <Box sx={{ mb: 1.5, p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
+               <Box sx={{ mb: 1.0, p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
                  <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 'bold', display: 'block', mb: 0.5 }}>
                    คนละครึ่ง (สวัสดิการรัฐ) — รัฐช่วย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
                  </Typography>
@@ -714,31 +714,30 @@ const POS: React.FC = () => {
 
              {/* Cash Details - ONLY shown when Cash (เงินสด) is active */}
              {paymentType === 'cash' && (
-               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.0 }}>
                  <TextField
                    label="รับเงินสดมา (Cash Received)"
                    variant="outlined"
                    type="number"
                    fullWidth
-                   size="small"
                    value={cashReceived}
                    onChange={(e) => setCashReceived(e.target.value)}
                    autoComplete="off"
                    slotProps={{ 
                      htmlInput: { 
                        style: { 
-                         fontSize: '1.25rem', 
-                         fontWeight: 800, 
-                         color: '#fff', 
+                         fontSize: '1.6rem', 
+                         fontWeight: 900, 
+                         color: '#22c55e', 
                          textAlign: 'right',
-                         padding: '8px 12px' 
+                         padding: '10px 14px' 
                        } 
                      } 
                    }}
                  />
                  
-                 {/* Banknotes - 2 rows of 3 columns (very fat and easy to touch) */}
-                 <Grid container spacing={0.6}>
+                 {/* Banknotes - 2 rows of 3 columns (very fat and easy to touch, but compact height) */}
+                 <Grid container spacing={0.5}>
                    {[
                      { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
                      { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
@@ -756,11 +755,11 @@ const POS: React.FC = () => {
                          sx={{ 
                            bgcolor: b.bg, 
                            color: b.color, 
-                           fontSize: '0.85rem',
+                           fontSize: '0.8rem',
                            fontWeight: 900,
-                           py: 1, 
+                           py: 0.7, 
                            borderRadius: 1.5,
-                           border: `1px solid ${b.color}33`,
+                           border: `1px solid ${b.color}22`,
                            '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
                          }}
                        >
@@ -776,9 +775,9 @@ const POS: React.FC = () => {
                        sx={{ 
                          bgcolor: '#1e293b', 
                          color: '#ef4444', 
-                         fontSize: '0.85rem',
+                         fontSize: '0.8rem',
                          fontWeight: 900,
-                         py: 1, 
+                         py: 0.7, 
                          borderRadius: 1.5,
                          border: '1px solid rgba(239,68,68,0.15)',
                          '&:hover': { bgcolor: '#334155' }
@@ -800,12 +799,12 @@ const POS: React.FC = () => {
                    </Grid>
                  </Grid>
 
-                 {/* Compact Change display */}
-                 <Box sx={{ p: 1.2, bgcolor: '#020617', borderRadius: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.06)' }}>
-                   <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
-                   <Typography variant="h5" sx={{ fontWeight: 900, color: '#10b981', fontFamily: 'Outfit' }}>
-                     ฿{computedChange.toFixed(2)}
-                   </Typography>
+                 {/* Expanded Change display */}
+                  <Box sx={{ p: 1.8, bgcolor: '#020617', borderRadius: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(34,197,94,0.2)', boxShadow: '0 0 10px rgba(34,197,94,0.05)' }}>
+                    <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 955, color: '#22c55e', fontFamily: 'Outfit', textShadow: '0 0 5px rgba(34,197,94,0.2)' }}>
+                      ฿{computedChange.toFixed(2)}
+                    </Typography>
                  </Box>
                </Box>
              )}
