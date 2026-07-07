@@ -7,7 +7,6 @@ import {
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import api from '../services/api';
 
 interface SummaryData {
@@ -62,17 +61,14 @@ const Dashboard: React.FC = () => {
   const loadReportData = async () => {
     try {
       setError('');
-      // Summary
       const summaryRes = await api.get('/reports/summary', {
         params: { start_date: startDate, end_date: endDate }
       });
       setSummary(summaryRes.data);
 
-      // Best Sellers
       const bestRes = await api.get('/reports/items/best', { params: { limit: 10 } });
       setBestSellers(bestRes.data);
 
-      // Worst Sellers
       const worstRes = await api.get('/reports/items/worst', { params: { limit: 10 } });
       setWorstSellers(worstRes.data);
     } catch (err: any) {
@@ -91,9 +87,6 @@ const Dashboard: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    const url = `${api.defaults.baseURL}/reports/export?start_date=${startDate}&end_date=${endDate}`;
-    // Access with Bearer token is tricky with standard anchor download, 
-    // so we can fetch it via api client as blob and then save it!
     api.get('/reports/export', {
       params: { start_date: startDate, end_date: endDate },
       responseType: 'blob'
@@ -117,8 +110,8 @@ const Dashboard: React.FC = () => {
   if (!isAdmin) {
     return (
       <Box sx={{ p: 4 }}>
-        <Alert severity="error">
-          <Typography variant="h6">เข้าถึงข้อมูลไม่ได้ (Permission Denied)</Typography>
+        <Alert severity="error" sx={{ borderRadius: 4 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>เข้าถึงข้อมูลไม่ได้ (Permission Denied)</Typography>
           คุณไม่มีสิทธิ์เข้าถึงหน้าแดชบอร์ดสรุปยอดขาย หน้านี้จำกัดเฉพาะผู้จัดการหรือแอดมินเท่านั้น
         </Alert>
       </Box>
@@ -126,21 +119,20 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
-        แดชบอร์ดรายงานยอดขาย (ADMIN SUMMARY)
+    <Box>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 4, letterSpacing: '-0.02em', color: '#fff' }}>
+        รายงานวิเคราะห์ยอดขาย (ADMIN ANALYTICS)
       </Typography>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
-      {/* Date filter row */}
-      <Paper elevation={3} sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+      {/* Date filter toolbar */}
+      <Paper elevation={0} sx={{ p: 3, mb: 4, display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'center', bgcolor: '#0f172a' }}>
         <TextField
           label="วันที่เริ่มต้น"
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          
           size="small"
         />
         <TextField
@@ -148,65 +140,76 @@ const Dashboard: React.FC = () => {
           type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          
           size="small"
         />
-        <Button variant="contained" color="primary" onClick={loadReportData}>
+        <Button variant="contained" color="primary" onClick={loadReportData} sx={{ px: 3 }}>
           กรองรายงาน
         </Button>
-        <Button variant="outlined" color="success" onClick={handleExportCSV}>
-          ส่งออกรายงาน (CSV)
+        <Button variant="outlined" color="success" onClick={handleExportCSV} sx={{ px: 3 }}>
+          ส่งออก CSV
         </Button>
         <Box sx={{ flexGrow: 1 }} />
-        <Button variant="contained" color="error" onClick={handleManualOpenDrawer}>
-          สั่งเปิดลิ้นชักเก็บเงินสด
+        <Button variant="contained" color="error" onClick={handleManualOpenDrawer} sx={{ px: 3 }}>
+          เปิดลิ้นชักเก็บเงินสด
         </Button>
       </Paper>
 
-      {/* Stats Cards Grid */}
+      {/* Gradient Stats Cards */}
       {summary && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {/* Card 1: Revenue */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Revenue */}
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ bgcolor: '#e3f2fd', borderLeft: '5px solid #1976d2' }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(59, 130, 246, 0.2)'
+            }}>
+              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
                 <Box>
-                  <Typography color="textSecondary" variant="subtitle2">ยอดขายรวม / Total Sales</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', mt: 1 }}>
+                  <Typography sx={{ opacity: 0.8, fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase' }}>ยอดขายรวม / Revenue</Typography>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mt: 1.5, fontFamily: 'Outfit' }}>
                     ฿{summary.total_sales.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
                   </Typography>
                 </Box>
-                <TrendingUpIcon sx={{ fontSize: 50, color: '#1976d2' }} />
+                <TrendingUpIcon sx={{ fontSize: 55, opacity: 0.25 }} />
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Card 2: Profit */}
+          {/* Profit */}
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ bgcolor: '#e8f5e9', borderLeft: '5px solid #2e7d32' }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #064e3b 0%, #10b981 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(16, 185, 129, 0.2)'
+            }}>
+              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
                 <Box>
-                  <Typography color="textSecondary" variant="subtitle2">กำไรขั้นต้นแนะนำ / Gross Profit</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', mt: 1 }}>
+                  <Typography sx={{ opacity: 0.8, fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase' }}>กำไรขั้นต้นแนะนำ / Margin</Typography>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mt: 1.5, fontFamily: 'Outfit' }}>
                     ฿{summary.total_profit.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
                   </Typography>
                 </Box>
-                <AttachMoneyIcon sx={{ fontSize: 50, color: '#2e7d32' }} />
+                <AttachMoneyIcon sx={{ fontSize: 55, opacity: 0.25 }} />
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Card 3: Bill count */}
+          {/* Transactions */}
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ bgcolor: '#fffde7', borderLeft: '5px solid #fbc02d' }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #78350f 0%, #d97706 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(217, 119, 6, 0.2)'
+            }}>
+              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
                 <Box>
-                  <Typography color="textSecondary" variant="subtitle2">จำนวนบิลคิดเงิน / Transaction Count</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', mt: 1 }}>
-                    {summary.bill_count} บิล
+                  <Typography sx={{ opacity: 0.8, fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase' }}>จำนวนบิล / Bills</Typography>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mt: 1.5, fontFamily: 'Outfit' }}>
+                    {summary.bill_count}
                   </Typography>
                 </Box>
-                <ReceiptIcon sx={{ fontSize: 50, color: '#fbc02d' }} />
+                <ReceiptIcon sx={{ fontSize: 55, opacity: 0.25 }} />
               </CardContent>
             </Card>
           </Grid>
@@ -215,33 +218,33 @@ const Dashboard: React.FC = () => {
 
       {/* Payment breakdown detail */}
       {summary && (
-        <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 5 }}>
           <Grid size={{ xs: 12, md: 4 }}>
-            <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#424242' }}>
-                ช่องทางชำระ: เงินสด (CASH)
+            <Paper elevation={0} sx={{ p: 3.5, textAlign: 'center', bgcolor: '#0f172a', borderLeft: '4px solid #94a3b8' }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', mb: 1 }}>
+                เงินสด (CASH)
               </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#616161' }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#fff', fontFamily: 'Outfit' }}>
                 ฿{summary.payment_breakdown.cash.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#0288d1' }}>
-                ช่องทางชำระ: QR Code (PromptPay)
+            <Paper elevation={0} sx={{ p: 3.5, textAlign: 'center', bgcolor: '#0f172a', borderLeft: '4px solid #3b82f6' }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#3b82f6', textTransform: 'uppercase', mb: 1 }}>
+                สแกน QR Code (PromptPay)
               </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#0288d1' }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#3b82f6', fontFamily: 'Outfit' }}>
                 ฿{summary.payment_breakdown.qr.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <Paper elevation={3} sx={{ p: 3, textAlign: 'center', border: '1px solid #c8e6c9', bgcolor: '#f1f8e9' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#2e7d32' }}>
-                ช่องทางชำระ: สวัสดิการรัฐ (คนละครึ่ง)
+            <Paper elevation={0} sx={{ p: 3.5, textAlign: 'center', bgcolor: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.1)', borderLeft: '4px solid #10b981' }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#10b981', textTransform: 'uppercase', mb: 1 }}>
+                สวัสดิการรัฐ (คนละครึ่ง)
               </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981', fontFamily: 'Outfit' }}>
                 ฿{summary.payment_breakdown.govt_welfare.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
               </Typography>
             </Paper>
@@ -249,15 +252,15 @@ const Dashboard: React.FC = () => {
         </Grid>
       )}
 
-      <Divider sx={{ my: 3 }} />
+      <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.06)' }} />
 
-      {/* Best vs Worst Sellers Section */}
-      <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+      {/* Tabs list */}
+      <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#fff' }}>
         วิเคราะห์รายการสินค้า (PRODUCT METRICS)
       </Typography>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs value={activeTab} onChange={(_, val) => setActiveTab(val)}>
+      <Box sx={{ borderBottom: 1, borderColor: 'rgba(255,255,255,0.06)', mb: 3 }}>
+        <Tabs value={activeTab} onChange={(_, val) => setActiveTab(val)} sx={{ '& .MuiTab-root': { fontWeight: 'bold', fontSize: '1rem' } }}>
           <Tab label="สินค้าขายดี 10 อันดับแรก (Top Sellers)" />
           <Tab label="สินค้าค้างคลัง / ขายไม่ออก (Worst Sellers)" />
         </Tabs>
@@ -265,28 +268,28 @@ const Dashboard: React.FC = () => {
 
       {/* Tab 1: Top Sellers */}
       {activeTab === 0 && (
-        <TableContainer component={Paper} elevation={3}>
+        <TableContainer component={Paper} elevation={0} sx={{ bgcolor: '#0f172a' }}>
           <Table>
-            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+            <TableHead>
               <TableRow>
-                <TableCell><strong>รหัสสินค้า / Barcode</strong></TableCell>
-                <TableCell><strong>ชื่อสินค้า / Product Name</strong></TableCell>
-                <TableCell align="center"><strong>จำนวนที่ขายได้ / Qty Sold</strong></TableCell>
-                <TableCell align="right"><strong>ยอดขายสะสม / Revenue</strong></TableCell>
+                <TableCell>รหัสสินค้า / Barcode</TableCell>
+                <TableCell>ชื่อสินค้า / Product Name</TableCell>
+                <TableCell align="center">จำนวนที่ขายได้ / Qty Sold</TableCell>
+                <TableCell align="right">ยอดขายสะสม / Revenue</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {bestSellers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">ไม่มีข้อมูลการเคลื่อนไหวในช่วงเวลานี้</TableCell>
+                  <TableCell colSpan={4} align="center" sx={{ py: 6, color: '#64748b' }}>ไม่มีข้อมูลการเคลื่อนไหวในช่วงเวลานี้</TableCell>
                 </TableRow>
               ) : (
                 bestSellers.map((item, index) => (
-                  <TableRow key={index} sx={{ '&:hover': { bgcolor: '#fafafa' } }}>
-                    <TableCell>{item.barcode}</TableCell>
-                    <TableCell><strong>{item.name}</strong></TableCell>
-                    <TableCell align="center">{item.total_qty} ชิ้น</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                  <TableRow key={index} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.01)' } }}>
+                    <TableCell sx={{ color: '#94a3b8' }}>{item.barcode}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: '#fff' }}>{item.name}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 700 }}>{item.total_qty} ชิ้น</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 800, color: '#10b981', fontSize: '1.05rem' }}>
                       ฿{item.total_revenue.toFixed(2)}
                     </TableCell>
                   </TableRow>
@@ -299,30 +302,30 @@ const Dashboard: React.FC = () => {
 
       {/* Tab 2: Worst Sellers */}
       {activeTab === 1 && (
-        <TableContainer component={Paper} elevation={3}>
+        <TableContainer component={Paper} elevation={0} sx={{ bgcolor: '#0f172a' }}>
           <Table>
-            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+            <TableHead>
               <TableRow>
-                <TableCell><strong>รหัสสินค้า / Barcode</strong></TableCell>
-                <TableCell><strong>ชื่อสินค้า / Product Name</strong></TableCell>
-                <TableCell align="center"><strong>จำนวนยอดขาย / Sales</strong></TableCell>
-                <TableCell align="center"><strong>สต็อกคงเหลือปัจจุบัน / Stock</strong></TableCell>
+                <TableCell>รหัสสินค้า / Barcode</TableCell>
+                <TableCell>ชื่อสินค้า / Product Name</TableCell>
+                <TableCell align="center">จำนวนยอดขาย / Sales</TableCell>
+                <TableCell align="center">สต็อกคงเหลือปัจจุบัน / Stock</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {worstSellers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">ไม่มีสินค้าคงเหลือค้างคลัง</TableCell>
+                  <TableCell colSpan={4} align="center" sx={{ py: 6, color: '#64748b' }}>ไม่มีสินค้าคงเหลือค้างคลัง</TableCell>
                 </TableRow>
               ) : (
                 worstSellers.map((item, index) => (
-                  <TableRow key={index} sx={{ '&:hover': { bgcolor: '#fafafa' } }}>
-                    <TableCell>{item.barcode}</TableCell>
-                    <TableCell><strong>{item.name}</strong></TableCell>
-                    <TableCell align="center" sx={{ color: '#d32f2f' }}>
+                  <TableRow key={index} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.01)' } }}>
+                    <TableCell sx={{ color: '#94a3b8' }}>{item.barcode}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: '#fff' }}>{item.name}</TableCell>
+                    <TableCell align="center" sx={{ color: '#ef4444', fontWeight: 700 }}>
                       {item.total_qty} ชิ้น
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                    <TableCell align="center" sx={{ fontWeight: 800, color: item.current_stock <= 10 ? '#ef4444' : '#fff' }}>
                       {item.current_stock} {item.base_unit}
                     </TableCell>
                   </TableRow>

@@ -3,15 +3,20 @@ import {
   Box, Grid, Paper, Typography, Button, TextField, Table, TableBody, 
   TableCell, TableContainer, TableHead, TableRow, IconButton, ButtonGroup,
   Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, Switch,
-  Alert, Divider, List, ListItem, ListItemText, ListItemButton, ListItemSecondaryAction
+  Alert, Divider, List, ListItemText, ListItemButton, ListItemSecondaryAction,
+  Card, CardContent, Chip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import api from '../services/api';
 
 interface Product {
@@ -30,7 +35,7 @@ interface Product {
 }
 
 interface CartItem {
-  product_id: number | null; // null for custom items
+  product_id: number | null;
   barcode?: string;
   name: string;
   is_pack: boolean;
@@ -38,8 +43,8 @@ interface CartItem {
   sold_unit: string;
   unit_price: number;
   subtotal: number;
-  pack_size: number; // for calculation
-  base_sell_price?: number; // backup for override
+  pack_size: number;
+  base_sell_price?: number;
   pack_sell_price?: number | null;
   base_unit?: string;
   pack_unit?: string;
@@ -53,20 +58,17 @@ interface SuspendedBill {
 }
 
 const POS: React.FC = () => {
-  // Cart state
   const [cart, setCart] = useState<CartItem[]>([]);
   const [barcodeInput, setBarcodeInput] = useState<string>('');
   
-  // Checkout & Welfare state
-  const [paymentType, setPaymentType] = useState<string>('cash'); // 'cash', 'qr', 'govt_welfare'
+  const [paymentType, setPaymentType] = useState<string>('cash');
   const [useWelfare, setUseWelfare] = useState<boolean>(false);
   const [govtPercent, setGovtPercent] = useState<number>(60.0);
   const [govtDailyCap, setGovtDailyCap] = useState<number>(150.0);
   const [discountGovt, setDiscountGovt] = useState<number>(0.0);
   const [cashReceived, setCashReceived] = useState<string>('');
-  const [changeDue, setChangeDue] = useState<number>(0.0);
 
-  // Popups & Dialogs
+  // Dialogs
   const [customItemOpen, setCustomItemOpen] = useState<boolean>(false);
   const [customBarcode, setCustomBarcode] = useState<string>('');
   const [customName, setCustomName] = useState<string>('');
@@ -92,7 +94,6 @@ const POS: React.FC = () => {
 
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
-  // Load Settings on start
   useEffect(() => {
     api.get('/settings')
       .then((res) => {
@@ -101,7 +102,6 @@ const POS: React.FC = () => {
       })
       .catch((err) => console.error('Error loading settings', err));
       
-    // Focus barcode scanner input automatically
     focusScanner();
   }, []);
 
@@ -111,7 +111,6 @@ const POS: React.FC = () => {
     }
   };
 
-  // Recalculate welfare discount when cart or useWelfare changes
   const totalCartAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
   useEffect(() => {
@@ -123,12 +122,10 @@ const POS: React.FC = () => {
     }
   }, [totalCartAmount, useWelfare, govtPercent, govtDailyCap]);
 
-  // Recalculate change due
   const customerPortion = totalCartAmount - discountGovt;
   const cashNum = parseFloat(cashReceived) || 0;
   const computedChange = cashNum > 0 ? Math.max(0, cashNum - customerPortion) : 0;
 
-  // Handle barcode submission
   const handleBarcodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcodeInput.trim()) return;
@@ -136,13 +133,10 @@ const POS: React.FC = () => {
     try {
       const res = await api.get(`/products/barcode/${barcodeInput.trim()}`);
       const product: Product = res.data;
-      
-      // Add product to cart
       addProductToCart(product);
       setBarcodeInput('');
     } catch (err: any) {
       if (err.response?.status === 404) {
-        // Unknown barcode, open add custom item dialog
         setCustomBarcode(barcodeInput);
         setCustomName('');
         setCustomPrice('');
@@ -160,13 +154,11 @@ const POS: React.FC = () => {
     setCart((prevCart) => {
       const existingIdx = prevCart.findIndex(item => item.product_id === product.id && !item.is_pack);
       if (existingIdx > -1) {
-        // Increment quantity
         const updated = [...prevCart];
         updated[existingIdx].sold_qty += 1;
         updated[existingIdx].subtotal = updated[existingIdx].sold_qty * updated[existingIdx].unit_price;
         return updated;
       } else {
-        // Add new item
         return [...prevCart, {
           product_id: product.id,
           barcode: product.barcode,
@@ -187,7 +179,36 @@ const POS: React.FC = () => {
     showTimeAlert('success', `เพิ่ม ${product.name} เข้ารถเข็น`);
   };
 
-  // Add Custom item freely
+  // Add Item Instantly (For quick buttons: Bag, Ice, Egg, etc.)
+  const handleQuickAdd = (name: string, price: number, unit: string = 'ชิ้น') => {
+    setCart((prevCart) => {
+      // Find if quick item already in cart
+      const idx = prevCart.findIndex(item => item.product_id === null && item.name === name && item.unit_price === price);
+      if (idx > -1) {
+        const updated = [...prevCart];
+        updated[idx].sold_qty += 1;
+        updated[idx].subtotal = updated[idx].sold_qty * updated[idx].unit_price;
+        return updated;
+      } else {
+        return [
+          ...prevCart,
+          {
+            product_id: null,
+            name,
+            is_pack: false,
+            sold_qty: 1,
+            sold_unit: unit,
+            unit_price: price,
+            subtotal: price,
+            pack_size: 1
+          }
+        ];
+      }
+    });
+    showTimeAlert('success', `เพิ่มรายการด่วน ${name}`);
+    focusScanner();
+  };
+
   const handleAddCustomItem = () => {
     if (!customName.trim() || !customPrice.trim()) {
       showTimeAlert('error', 'กรุณากรอกชื่อสินค้าและราคา');
@@ -203,7 +224,7 @@ const POS: React.FC = () => {
     setCart((prevCart) => [
       ...prevCart,
       {
-        product_id: null, // custom
+        product_id: null,
         barcode: customBarcode || undefined,
         name: customName,
         is_pack: false,
@@ -237,19 +258,17 @@ const POS: React.FC = () => {
     setCart((prevCart) => prevCart.filter((_, i) => i !== index));
   };
 
-  // Toggle Pack vs Unit
   const handleTogglePack = (index: number) => {
     setCart((prevCart) => {
       const updated = [...prevCart];
       const item = updated[index];
-      if (item.product_id === null) return prevCart; // custom items don't have packs
+      if (item.product_id === null) return prevCart;
 
       const newIsPack = !item.is_pack;
       item.is_pack = newIsPack;
       
       if (newIsPack) {
         item.sold_unit = item.pack_unit || 'แพ็ค';
-        // If pack_sell_price is set, use it. Otherwise, unit_price * pack_size
         item.unit_price = item.pack_sell_price || (item.base_sell_price! * item.pack_size);
       } else {
         item.sold_unit = item.base_unit || 'ชิ้น';
@@ -261,11 +280,9 @@ const POS: React.FC = () => {
     });
   };
 
-  // Admin Override Flow
   const handleRequestOverride = (action: 'price' | 'drawer', index: number | null = null) => {
     const role = localStorage.getItem('employee_role');
     if (role === 'admin') {
-      // Already admin, bypass PIN prompt
       if (action === 'price' && index !== null) {
         openEditPrice(index);
       } else if (action === 'drawer') {
@@ -310,7 +327,6 @@ const POS: React.FC = () => {
     const item = cart[selectedCartIndex];
 
     if (editPermanent && item.product_id) {
-      // Save permanently to database
       try {
         const payload = item.is_pack 
           ? { sell_price: item.base_sell_price!, pack_sell_price: price }
@@ -324,7 +340,6 @@ const POS: React.FC = () => {
       }
     }
 
-    // Update in-cart pricing
     setCart((prevCart) => {
       const updated = [...prevCart];
       const target = updated[selectedCartIndex];
@@ -350,7 +365,6 @@ const POS: React.FC = () => {
     }
   };
 
-  // Suspend Cart Flow
   const handleOpenSuspend = () => {
     if (cart.length === 0) return;
     setSuspendName(`HOLD-${(suspendedBills.length + 1).toString().padStart(2, '0')}`);
@@ -392,7 +406,6 @@ const POS: React.FC = () => {
       .catch(() => showTimeAlert('error', 'เกิดข้อผิดพลาดในการดึงบิล'));
   };
 
-  // Finalize Sale Flow
   const handleCheckout = async () => {
     if (cart.length === 0) {
       showTimeAlert('error', 'ไม่มีสินค้าในตะกร้า');
@@ -404,7 +417,7 @@ const POS: React.FC = () => {
     }
 
     const payload = {
-      terminal_id: 'POS-01', // defaults to 1st machine
+      terminal_id: 'POS-01',
       payment_type: paymentType,
       total_amount: totalCartAmount,
       discount_govt: discountGovt,
@@ -424,8 +437,6 @@ const POS: React.FC = () => {
     try {
       const res = await api.post('/sales/', payload);
       showTimeAlert('success', `คิดเงินเสร็จสิ้น บิลเลขที่: ${res.data.sale_no}`);
-      
-      // Reset state for next customer
       setCart([]);
       setCashReceived('');
       setUseWelfare(false);
@@ -442,109 +453,113 @@ const POS: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       {alertMsg && (
         <Alert 
           severity={alertMsg.type} 
-          sx={{ position: 'fixed', top: 20, right: 20, zIndex: 9999, minWidth: 250 }}
+          sx={{ position: 'fixed', top: 80, right: 20, zIndex: 9999, minWidth: 300, borderRadius: 3, boxShadow: '0 10px 20px rgba(0,0,0,0.3)' }}
         >
           {alertMsg.text}
         </Alert>
       )}
 
-      <Grid container spacing={2}>
-        {/* Left Side: Cart and Barcode scanner */}
+      <Grid container spacing={3}>
+        {/* Left Area: Scanning, cart, and quick items */}
         <Grid size={{ xs: 12, md: 8 }}>
-          <Paper elevation={3} sx={{ p: 2, height: '80vh', display: 'flex', flexDirection: 'column' }}>
+          <Paper elevation={0} sx={{ p: 3, height: '82vh', display: 'flex', flexDirection: 'column', bgcolor: '#0f172a' }}>
             
-            {/* Barcode scanner row */}
-            <Box component="form" onSubmit={handleBarcodeSubmit} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            {/* Scanner search row */}
+            <Box component="form" onSubmit={handleBarcodeSubmit} sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
               <TextField
                 inputRef={barcodeInputRef}
                 fullWidth
                 variant="outlined"
-                placeholder="สแกนบาร์โค้ด หรือ พิมพ์รหัสสั้น (เช่น 050) แล้วกด Enter"
+                placeholder="🔍 สแกนบาร์โค้ด หรือ พิมพ์รหัสสั้น (เช่น 050) แล้วกด Enter"
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
-                sx={{ bgcolor: '#fff' }}
+                autoComplete="off"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(255,255,255,0.03)',
+                    fontSize: '1.1rem',
+                  }
+                }}
               />
-              <Button type="submit" variant="contained" color="primary" sx={{ px: 4 }}>
-                ยิงบาร์โค้ด
+              <Button type="submit" variant="contained" color="primary" sx={{ px: 4, borderRadius: 3 }}>
+                ค้นหา
               </Button>
             </Box>
 
-            <Divider sx={{ mb: 2 }} />
-
-            {/* Cart Table */}
-            <TableContainer sx={{ flexGrow: 1, overflowY: 'auto' }}>
-              <Table stickyHeader size="small">
+            {/* Cart Table Area */}
+            <TableContainer sx={{ flexGrow: 1, overflowY: 'auto', mb: 2, border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3, bgcolor: 'rgba(0,0,0,0.1)' }}>
+              <Table stickyHeader size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>สินค้า / Item</strong></TableCell>
-                    <TableCell align="center"><strong>ราคา / Unit</strong></TableCell>
-                    <TableCell align="center"><strong>จำนวน / Qty</strong></TableCell>
-                    <TableCell align="center"><strong>หน่วย / Suffix</strong></TableCell>
-                    <TableCell align="right"><strong>ราคารวม / Sub</strong></TableCell>
-                    <TableCell align="center"><strong>ตัวควบคุม / Action</strong></TableCell>
+                    <TableCell>สินค้า</TableCell>
+                    <TableCell align="center">ราคา</TableCell>
+                    <TableCell align="center">จำนวน</TableCell>
+                    <TableCell align="center">หน่วยขาย</TableCell>
+                    <TableCell align="right">ราคารวม</TableCell>
+                    <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {cart.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 8, color: '#9e9e9e' }}>
-                        ยังไม่มีสินค้าในรถเข็น สแกนบาร์โค้ดเพื่อเริ่มต้นขาย
+                      <TableCell colSpan={6} align="center" sx={{ py: 10, color: '#64748b' }}>
+                        <ShoppingCartIcon sx={{ fontSize: 60, mb: 2, opacity: 0.3 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>ยังไม่มีสินค้าในตะกร้า</Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.8 }}>ยิงบาร์โค้ด หรือใช้แผงกดสินค้าด่วนด้านล่างเพื่อเริ่มขาย</Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
                     cart.map((item, index) => (
-                      <TableRow key={index} sx={{ '&:hover': { bgcolor: '#f5f5f5' } }}>
-                        {/* Item Name */}
+                      <TableRow key={index} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
+                        {/* Name */}
                         <TableCell>
-                          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                          <Typography variant="body1" sx={{ fontWeight: 700, color: '#fff' }}>
                             {item.name}
                           </Typography>
                           {item.barcode && (
-                            <Typography variant="caption" color="textSecondary">
-                              {item.barcode}
-                            </Typography>
+                            <Chip label={item.barcode} size="small" variant="outlined" sx={{ height: 18, fontSize: '0.65rem', color: '#94a3b8', mt: 0.5 }} />
                           )}
                         </TableCell>
                         
-                        {/* Price with override options */}
+                        {/* Unit Price */}
                         <TableCell align="center">
                           <Button 
                             variant="text" 
                             onClick={() => handleRequestOverride('price', index)}
-                            sx={{ color: '#1976d2', textTransform: 'none', fontWeight: 'bold' }}
+                            sx={{ color: '#60a5fa', textTransform: 'none', fontWeight: 800, fontSize: '1rem' }}
                           >
                             ฿{item.unit_price.toFixed(2)}
                           </Button>
                         </TableCell>
                         
-                        {/* Quantity controls */}
+                        {/* Quantity */}
                         <TableCell align="center">
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <IconButton 
                               size="small" 
                               onClick={() => handleUpdateQty(index, item.sold_qty - 1)}
-                              sx={{ border: '1px solid #e0e0e0', mr: 1 }}
+                              sx={{ border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#fff' } }}
                             >
                               <RemoveIcon fontSize="small" />
                             </IconButton>
-                            <Typography sx={{ minWidth: 30, fontWeight: 'bold' }}>
+                            <Typography sx={{ minWidth: 35, fontWeight: 850, fontSize: '1.05rem', color: '#fff', textAlign: 'center' }}>
                               {item.sold_qty}
                             </Typography>
                             <IconButton 
                               size="small" 
                               onClick={() => handleUpdateQty(index, item.sold_qty + 1)}
-                              sx={{ border: '1px solid #e0e0e0', ml: 1 }}
+                              sx={{ border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#fff' } }}
                             >
                               <AddIcon fontSize="small" />
                             </IconButton>
                           </Box>
                         </TableCell>
 
-                        {/* Unit / Pack Toggle */}
+                        {/* Unit Toggle */}
                         <TableCell align="center">
                           {item.product_id ? (
                             <Button 
@@ -553,27 +568,29 @@ const POS: React.FC = () => {
                               onClick={() => handleTogglePack(index)}
                               sx={{ 
                                 textTransform: 'none', 
-                                color: item.is_pack ? '#2e7d32' : '#757575',
-                                borderColor: item.is_pack ? '#a5d6a7' : '#e0e0e0',
-                                bgcolor: item.is_pack ? '#e8f5e9' : 'transparent',
-                                '&:hover': { bgcolor: item.is_pack ? '#c8e6c9' : '#eeeeee' }
+                                fontWeight: 700,
+                                borderRadius: 2.5,
+                                color: item.is_pack ? '#10b981' : '#94a3b8',
+                                borderColor: item.is_pack ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)',
+                                bgcolor: item.is_pack ? 'rgba(16,185,129,0.08)' : 'transparent',
+                                '&:hover': { bgcolor: item.is_pack ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)' }
                               }}
                             >
                               {item.sold_unit}
                             </Button>
                           ) : (
-                            <Typography variant="body2" color="textSecondary">
+                            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
                               {item.sold_unit}
                             </Typography>
                           )}
                         </TableCell>
 
                         {/* Subtotal */}
-                        <TableCell align="right" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                        <TableCell align="right" sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>
                           ฿{item.subtotal.toFixed(2)}
                         </TableCell>
 
-                        {/* Delete */}
+                        {/* Delete button */}
                         <TableCell align="center">
                           <IconButton color="error" size="small" onClick={() => handleRemoveItem(index)}>
                             <DeleteIcon />
@@ -586,142 +603,233 @@ const POS: React.FC = () => {
               </Table>
             </TableContainer>
 
-            {/* Quick action buttons bottom left */}
-            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+            {/* Quick unbarcoded items grid */}
+            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#94a3b8' }}>⚡ รายการสินค้าด่วนยอดนิยม / Quick Items</Typography>
+            <Grid container spacing={1} sx={{ mb: 2.5 }}>
+              {[
+                { name: 'ถุงหิ้วพลาสติก', price: 1, unit: 'ใบ', color: '#475569' },
+                { name: 'น้ำแข็งเปล่า', price: 2, unit: 'แก้ว', color: '#0891b2' },
+                { name: 'ไข่ไก่ดิบ', price: 5, unit: 'ฟอง', color: '#b45309' },
+                { name: 'สินค้าทั่วไป 10 บ.', price: 10, unit: 'ชิ้น', color: '#0f766e' },
+                { name: 'สินค้าทั่วไป 20 บ.', price: 20, unit: 'ชิ้น', color: '#1d4ed8' },
+                { name: 'สินค้าทั่วไป 50 บ.', price: 50, unit: 'ชิ้น', color: '#701a75' },
+                { name: 'สินค้าทั่วไป 100 บ.', price: 100, unit: 'ชิ้น', color: '#4c1d95' }
+              ].map((q) => (
+                <Grid size={{ xs: 3, sm: 1.7 }} key={q.name}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleQuickAdd(q.name, q.price, q.unit)}
+                    sx={{
+                      bgcolor: q.color,
+                      fontSize: '0.75rem',
+                      py: 1,
+                      borderRadius: 2.5,
+                      boxShadow: 'none',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      '&:hover': { bgcolor: q.color, filter: 'brightness(1.15)' }
+                    }}
+                  >
+                    {q.name.split(' ')[0]} ({q.price}.-)
+                  </Button>
+                </Grid>
+              ))}
+            </Grid>
+
+            {/* Hold action controls */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <Button 
                 variant="outlined" 
                 color="warning" 
                 startIcon={<PauseIcon />}
                 onClick={handleOpenSuspend}
                 disabled={cart.length === 0}
-                sx={{ py: 1.5, flexGrow: 1 }}
+                sx={{ py: 1.5, flexGrow: 1, borderRadius: 3 }}
               >
-                พักบิล (Hold Cart)
+                พักบิล
               </Button>
               <Button 
                 variant="outlined" 
                 color="info" 
                 startIcon={<PlayArrowIcon />}
                 onClick={() => { loadSuspendedBills(); setResumeOpen(true); }}
-                sx={{ py: 1.5, flexGrow: 1 }}
+                sx={{ py: 1.5, flexGrow: 1, borderRadius: 3 }}
               >
-                ดึงบิลพัก (List Hold)
+                ดึงบิลที่พักไว้ ({suspendedBills.length})
               </Button>
               <Button 
                 variant="outlined" 
                 color="primary" 
                 startIcon={<LockOpenIcon />}
                 onClick={() => handleRequestOverride('drawer')}
-                sx={{ py: 1.5, flexGrow: 1 }}
+                sx={{ py: 1.5, flexGrow: 1, borderRadius: 3 }}
               >
-                ดีดลิ้นชัก (Open Drawer)
+                ดีดลิ้นชัก
               </Button>
             </Box>
           </Paper>
         </Grid>
 
-        {/* Right Side: Total Summary / Checkout controls */}
+        {/* Right Area: Checkout sidebar */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper elevation={3} sx={{ p: 3, height: '80vh', display: 'flex', flexDirection: 'column', bgcolor: '#fafafa' }}>
-            <Typography variant="h5" align="center" sx={{ fontWeight: 'bold', mb: 3 }}>
-              ยอดรวมบิล / CHECKOUT
+          <Paper elevation={0} sx={{ p: 3.5, height: '82vh', display: 'flex', flexDirection: 'column', bgcolor: '#0f172a' }}>
+            <Typography variant="h6" align="center" sx={{ fontWeight: 800, mb: 3, letterSpacing: '0.05em', color: '#94a3b8' }}>
+              หน้าจอชำระเงิน
             </Typography>
 
-            <Box sx={{ mb: 3, p: 2, bgcolor: '#e3f2fd', borderRadius: 2, textAlign: 'center' }}>
-              <Typography variant="body2" color="textSecondary">ยอดรวมทั้งหมด / Total</Typography>
-              <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#1565c0' }}>
+            {/* Glowing neon total screen */}
+            <Box 
+              sx={{ 
+                mb: 3.5, 
+                p: 3, 
+                bgcolor: '#020617', 
+                borderRadius: 4, 
+                textAlign: 'center', 
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(59, 130, 246, 0.15)'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                ยอดชำระเงินทั้งหมด / Grand Total
+              </Typography>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontWeight: 900, 
+                  color: '#3b82f6', 
+                  mt: 1.5,
+                  fontFamily: 'Outfit',
+                  textShadow: '0 0 10px rgba(59, 130, 246, 0.4)'
+                }}
+              >
                 ฿{totalCartAmount.toFixed(2)}
               </Typography>
             </Box>
 
-            {/* Government Welfare Scheme Switch */}
-            <Box sx={{ mb: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: '#fff' }}>
+            {/* Welfare toggle config */}
+            <Box sx={{ mb: 3, p: 2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, bgcolor: 'rgba(255,255,255,0.01)' }}>
               <FormControlLabel
                 control={
                   <Switch 
                     checked={useWelfare} 
                     onChange={(e) => setUseWelfare(e.target.checked)} 
-                    color="primary"
+                    color="secondary"
                   />
                 }
-                label={<strong>สิทธิ์สวัสดิการรัฐ (คนละครึ่ง)</strong>}
+                label={<strong style={{ color: '#e2e8f0' }}>สิทธิ์สวัสดิการรัฐ (คนละครึ่ง)</strong>}
               />
               {useWelfare && (
-                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="body2" color="textSecondary">
-                    *สัดส่วนรัฐช่วย {govtPercent}% (ไม่เกินวันละ {govtDailyCap} บาท)
+                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                    * ช่วยจ่าย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
                   </Typography>
                   <TextField
-                    label="จำนวนเงินที่รัฐช่วย (แก้ไขได้)"
+                    label="จำนวนเงินที่รัฐช่วย (บาท)"
                     type="number"
                     size="small"
                     value={discountGovt}
                     onChange={(e) => setDiscountGovt(Math.min(totalCartAmount, parseFloat(e.target.value) || 0))}
                   />
-                  <Divider sx={{ my: 1 }} />
-                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#d32f2f' }}>
-                    ยอดลูกค้าจ่ายจริง: ฿{(customerPortion).toFixed(2)}
-                  </Typography>
+                  <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.08)' }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ color: '#f8fafc' }}>ยอดเก็บเงินสดจริง:</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#ef4444' }}>
+                      ฿{(customerPortion).toFixed(2)}
+                    </Typography>
+                  </Box>
                 </Box>
               )}
             </Box>
 
-            {/* Payment Type Selection */}
-            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>ช่องทางชำระเงิน / Payment Type</Typography>
-            <ButtonGroup fullWidth variant="outlined" color="primary" sx={{ mb: 3, bgcolor: '#fff' }}>
+            {/* Payment buttons */}
+            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#94a3b8' }}>วิธีการชำระเงิน</Typography>
+            <ButtonGroup fullWidth sx={{ mb: 3, '& .MuiButton-root': { py: 1.5 } }}>
               <Button 
                 variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
                 onClick={() => setPaymentType('cash')}
+                startIcon={<LocalAtmIcon />}
               >
                 เงินสด
               </Button>
               <Button 
                 variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
                 onClick={() => setPaymentType('qr')}
+                startIcon={<QrCodeScannerIcon />}
               >
                 สแกน QR
               </Button>
               <Button 
                 variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
                 onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
+                startIcon={<PointOfSaleIcon />}
               >
                 เป๋าตัง
               </Button>
             </ButtonGroup>
 
-            {/* Cash received calculator */}
+            {/* Cash details and Thai banknote buttons */}
             {paymentType === 'cash' && (
               <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <TextField
-                  label="รับเงินสดมา / Cash Received"
+                  label="รับเงินสดมา (Cash Received)"
                   variant="outlined"
                   type="number"
                   fullWidth
                   value={cashReceived}
                   onChange={(e) => setCashReceived(e.target.value)}
                   autoComplete="off"
-                  slotProps={{ htmlInput: { style: { fontSize: '1.25rem', fontWeight: 'bold' } } }}
+                  slotProps={{ htmlInput: { style: { fontSize: '1.3rem', fontWeight: 800, color: '#fff', textAlign: 'right' } } }}
                 />
                 
-                {/* Quick cash buttons */}
+                {/* Banknote Buttons styled like Thai bills */}
                 <Grid container spacing={1}>
-                  {[20, 50, 100, 500, 1000].map(val => (
-                    <Grid size={2.4} key={val}>
+                  {[
+                    { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
+                    { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
+                    { value: 100, bg: '#450a0a', color: '#f87171', label: '100' },
+                    { value: 500, bg: '#3b0764', color: '#c084fc', label: '500' },
+                    { value: 1000, bg: '#292524', color: '#f4ebe4', label: '1,000' }
+                  ].map(b => (
+                    <Grid size={2.4} key={b.value}>
                       <Button 
                         fullWidth 
-                        variant="outlined"
-                        onClick={() => setCashReceived((parseFloat(cashReceived) || 0 + val).toString())}
-                        sx={{ fontSize: '0.85rem', p: 1 }}
+                        onClick={() => {
+                          const currentVal = parseFloat(cashReceived) || 0;
+                          setCashReceived((currentVal + b.value).toString());
+                        }}
+                        sx={{ 
+                          bgcolor: b.bg, 
+                          color: b.color, 
+                          fontSize: '0.85rem',
+                          fontWeight: 'bold',
+                          py: 1, 
+                          borderRadius: 2,
+                          border: `1px solid ${b.color}44`,
+                          '&:hover': { bgcolor: b.bg, filter: 'brightness(1.25)' }
+                        }}
                       >
-                        +{val}
+                        +{b.label}
                       </Button>
                     </Grid>
                   ))}
+                  <Grid size={12}>
+                    <Button 
+                      fullWidth 
+                      variant="outlined" 
+                      onClick={() => setCashReceived(customerPortion.toString())}
+                      sx={{ py: 0.8, fontSize: '0.8rem', color: '#94a3b8', borderColor: 'rgba(255,255,255,0.1)' }}
+                    >
+                      รับเงินสดพอดีดีดบิล (Exact cash: ฿{customerPortion.toFixed(2)})
+                    </Button>
+                  </Grid>
                 </Grid>
 
-                <Box sx={{ p: 2, bgcolor: '#e8f5e9', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body1"><strong>เงินทอน / Change:</strong></Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                <Box sx={{ p: 2, bgcolor: '#020617', borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.1)' }}>
+                  <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 900, color: '#10b981' }}>
                     ฿{computedChange.toFixed(2)}
                   </Typography>
                 </Box>
@@ -736,9 +844,17 @@ const POS: React.FC = () => {
               color="success"
               size="large"
               onClick={handleCheckout}
-              sx={{ py: 2, fontSize: '1.2rem', fontWeight: 'bold' }}
+              sx={{ 
+                py: 2.2, 
+                fontSize: '1.25rem', 
+                fontWeight: 900, 
+                borderRadius: 4,
+                bgcolor: '#10b981',
+                boxShadow: '0 4px 20px rgba(16,185,129,0.25)',
+                '&:hover': { bgcolor: '#059669', boxShadow: '0 4px 25px rgba(16,185,129,0.45)' }
+              }}
             >
-              ยืนยันการขาย (PAY)
+              ยืนยันรับเงิน (CHECKOUT)
             </Button>
           </Paper>
         </Grid>
@@ -749,17 +865,17 @@ const POS: React.FC = () => {
         <DialogTitle sx={{ fontWeight: 'bold' }}>สินค้านอกคลัง / พิมพ์ราคาเอง</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 320, pt: 1 }}>
           <Typography color="textSecondary" variant="body2">
-            บาร์โค้ด: {customBarcode || 'ไม่มีบาร์โค้ด'}
+            รหัสสินค้า/บาร์โค้ด: <strong>{customBarcode || 'ทั่วไป'}</strong>
           </Typography>
           <TextField
-            label="ชื่อสินค้า / Product Name"
+            label="ชื่อสินค้า"
             fullWidth
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
             autoFocus
           />
           <TextField
-            label="ราคาขาย / Price"
+            label="ราคาขาย (บาท)"
             type="number"
             fullWidth
             value={customPrice}
@@ -767,23 +883,23 @@ const POS: React.FC = () => {
           />
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
-              label="จำนวน / Qty"
+              label="จำนวน"
               type="number"
               value={customQty}
               onChange={(e) => setCustomQty(Math.max(1, parseInt(e.target.value) || 1))}
               sx={{ flexGrow: 1 }}
             />
             <TextField
-              label="หน่วย / Unit"
+              label="หน่วยขาย"
               value={customUnit}
               onChange={(e) => setCustomUnit(e.target.value)}
               sx={{ flexGrow: 1 }}
             />
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => { setCustomItemOpen(false); focusScanner(); }} color="secondary">ยกเลิก</Button>
-          <Button onClick={handleAddCustomItem} variant="contained" color="primary">เพิ่มรายการ</Button>
+          <Button onClick={handleAddCustomItem} variant="contained" color="primary">เพิ่มเข้ารถเข็น</Button>
         </DialogActions>
       </Dialog>
 
@@ -792,7 +908,7 @@ const POS: React.FC = () => {
         <DialogTitle sx={{ fontWeight: 'bold' }}>ยืนยันด้วย PIN ของ Admin</DialogTitle>
         <DialogContent sx={{ minWidth: 280, pt: 1 }}>
           <TextField
-            label="รหัส PIN แอดมิน (4-6 หลัก)"
+            label="รหัส PIN ผู้จัดการแอดมิน"
             type="password"
             fullWidth
             value={adminPin}
@@ -800,18 +916,18 @@ const POS: React.FC = () => {
             autoFocus
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => { setOverrideOpen(false); focusScanner(); }}>ยกเลิก</Button>
-          <Button onClick={handleOverrideSubmit} variant="contained" color="error">ตรวจสอบ</Button>
+          <Button onClick={handleOverrideSubmit} variant="contained" color="error">อนุมัติ</Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog: Edit Price */}
       <Dialog open={editPriceOpen} onClose={() => { setEditPriceOpen(false); focusScanner(); }}>
-        <DialogTitle sx={{ fontWeight: 'bold' }}>แก้ไขราคาสินค้า</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>แก้ไขราคาหน้าร้าน</DialogTitle>
         <DialogContent sx={{ minWidth: 300, pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
-            label="ราคาขายใหม่ / New Price"
+            label="ราคาขายใหม่"
             type="number"
             fullWidth
             value={newPrice}
@@ -827,29 +943,29 @@ const POS: React.FC = () => {
                   color="error"
                 />
               }
-              label={<strong>อัปเดตราคาถาวรลงสต็อกสินค้าหลัก</strong>}
+              label={<strong>บันทึกราคานี้เป็นราคาขายหลักถาวร</strong>}
             />
           )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => { setEditPriceOpen(false); focusScanner(); }}>ยกเลิก</Button>
-          <Button onClick={handleSavePriceEdit} variant="contained" color="primary">บันทึกราคา</Button>
+          <Button onClick={handleSavePriceEdit} variant="contained" color="primary">บันทึก</Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog: Suspend Name */}
       <Dialog open={suspendOpen} onClose={() => setSuspendOpen(false)}>
-        <DialogTitle sx={{ fontWeight: 'bold' }}>พักบิลสินค้า</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>พักบิลคิดเงินชั่วคราว</DialogTitle>
         <DialogContent sx={{ minWidth: 280, pt: 1 }}>
           <TextField
-            label="รหัสบิลพัก (Hold Name)"
+            label="ตั้งชื่อบิลพัก (เช่น โต๊ะ 1, ชื่อลูกค้า)"
             fullWidth
             value={suspendName}
             onChange={(e) => setSuspendName(e.target.value)}
             autoFocus
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setSuspendOpen(false)}>ยกเลิก</Button>
           <Button onClick={handleSuspendSubmit} variant="contained" color="warning">พักบิล</Button>
         </DialogActions>
@@ -860,8 +976,8 @@ const POS: React.FC = () => {
         <DialogTitle sx={{ fontWeight: 'bold' }}>รายการบิลที่พักไว้ทั้งหมด</DialogTitle>
         <DialogContent>
           {suspendedBills.length === 0 ? (
-            <Typography align="center" color="textSecondary" sx={{ py: 3 }}>
-              ไม่มีบิลพักอยู่ในขณะนี้
+            <Typography align="center" color="textSecondary" sx={{ py: 4 }}>
+              ไม่มีบิลค้างพักไว้ในขณะนี้
             </Typography>
           ) : (
             <List>
@@ -874,13 +990,13 @@ const POS: React.FC = () => {
                   <ListItemButton 
                     key={bill.id} 
                     onClick={() => handleResumeBill(bill)}
-                    sx={{ borderBottom: '1px solid #f0f0f0' }}
+                    sx={{ borderBottom: '1px solid rgba(255,255,255,0.06)', py: 1.5 }}
                   >
                     <ListItemText
                       primary={<strong>{bill.hold_no}</strong>}
                       secondary={`${itemsCount} รายการ — ยอดรวม ฿${billTotal.toFixed(2)}`}
                     />
-                    <ListItemSecondaryAction>
+                    <ListItemSecondaryAction sx={{ mr: 1 }}>
                       <IconButton edge="end" color="primary" onClick={() => handleResumeBill(bill)}>
                         <PlayArrowIcon />
                       </IconButton>
@@ -891,8 +1007,8 @@ const POS: React.FC = () => {
             </List>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setResumeOpen(false); focusScanner(); }}>ปิด</Button>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => { setResumeOpen(false); focusScanner(); }}>ปิดหน้าต่าง</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Box, Paper, Typography, Button, TextField, Table, TableBody, 
   TableCell, TableContainer, TableHead, TableRow, IconButton, Dialog, 
-  DialogTitle, DialogContent, DialogActions, Grid, Divider, Alert, Card, CardContent
+  DialogTitle, DialogContent, DialogActions, Grid, Alert, Card, CardContent,
+  Chip, Divider
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -189,7 +190,6 @@ const Inventory: React.FC = () => {
     setTimeout(() => setSuccess(''), 4000);
   };
 
-  // Price Calculation on the fly
   const costNum = parseFloat(costPrice) || 0;
   const taxNum = parseFloat(taxPercent) || 0;
   const laborNum = parseFloat(laborCost) || 0;
@@ -206,8 +206,8 @@ const Inventory: React.FC = () => {
   if (!isAdmin) {
     return (
       <Box sx={{ p: 4 }}>
-        <Alert severity="error">
-          <Typography variant="h6">เข้าถึงข้อมูลไม่ได้ (Permission Denied)</Typography>
+        <Alert severity="error" sx={{ borderRadius: 4 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>เข้าถึงข้อมูลไม่ได้ (Permission Denied)</Typography>
           หน้านี้จำกัดเฉพาะผู้จัดการหรือแอดมินเท่านั้น แคชเชียร์ทั่วไปไม่สามารถแก้ไขคลังสินค้าได้
         </Alert>
       </Box>
@@ -215,78 +215,94 @@ const Inventory: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
+    <Box>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 4, letterSpacing: '-0.02em', color: '#fff' }}>
         จัดการคลังสินค้าและราคาทุน (INVENTORY CONTROL)
       </Typography>
 
-      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 3, borderRadius: 3 }}>{success}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
       {/* Control bar */}
-      <Paper elevation={3} sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+      <Paper elevation={0} sx={{ p: 2.5, mb: 4, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', bgcolor: '#0f172a' }}>
         <TextField
-          label="ค้นหาสินค้า (ชื่อ/บาร์โค้ด/หมวดหมู่)"
+          label="🔍 ค้นหาด้วย ชื่อ / บาร์โค้ด / หมวดหมู่สินค้า"
           variant="outlined"
           size="small"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ minWidth: 300 }}
+          sx={{ minWidth: 320 }}
         />
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenAdd}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenAdd} sx={{ px: 3 }}>
           เพิ่มสินค้าใหม่
         </Button>
-        <Button variant="outlined" color="info" startIcon={<UploadFileIcon />} onClick={() => setImportOpen(true)}>
+        <Button variant="outlined" color="info" startIcon={<UploadFileIcon />} onClick={() => setImportOpen(true)} sx={{ px: 3 }}>
           นำเข้าไฟล์ CSV
         </Button>
       </Paper>
 
       {/* Product List Table */}
-      <TableContainer component={Paper} elevation={3}>
-        <Table size="small">
-          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ bgcolor: '#0f172a' }}>
+        <Table size="medium">
+          <TableHead>
             <TableRow>
-              <TableCell><strong>บาร์โค้ด</strong></TableCell>
-              <TableCell><strong>ชื่อสินค้า</strong></TableCell>
-              <TableCell><strong>หมวดหมู่</strong></TableCell>
-              <TableCell align="right"><strong>ราคาทุน</strong></TableCell>
-              <TableCell align="right"><strong>ราคาขายปลีก</strong></TableCell>
-              <TableCell align="right"><strong>ราคาขายแพ็ค</strong></TableCell>
-              <TableCell align="center"><strong>สต็อกคงเหลือ</strong></TableCell>
-              <TableCell align="center"><strong>คำแนะนำราคา</strong></TableCell>
-              <TableCell align="center"><strong>ตัวควบคุม</strong></TableCell>
+              <TableCell>บาร์โค้ด</TableCell>
+              <TableCell>ชื่อสินค้า</TableCell>
+              <TableCell>หมวดหมู่</TableCell>
+              <TableCell align="right">ราคาทุน</TableCell>
+              <TableCell align="right">ราคาขายปลีก</TableCell>
+              <TableCell align="right">ราคาขายแพ็ค</TableCell>
+              <TableCell align="center">สต็อกคงเหลือ</TableCell>
+              <TableCell align="center">ราคาแนะนำ</TableCell>
+              <TableCell align="center">การดำเนินการ</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>ไม่พบรายการสินค้าที่ระบุ</TableCell>
+                <TableCell colSpan={9} align="center" sx={{ py: 8, color: '#64748b' }}>ไม่พบรายการสินค้าที่ระบุ</TableCell>
               </TableRow>
             ) : (
               filteredProducts.map((p) => (
-                <TableRow key={p.id} sx={{ '&:hover': { bgcolor: '#fafafa' } }}>
-                  <TableCell>{p.barcode}</TableCell>
-                  <TableCell><strong>{p.name}</strong></TableCell>
-                  <TableCell>{p.category || 'ทั่วไป'}</TableCell>
-                  <TableCell align="right">฿{p.cost_price.toFixed(2)}</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>฿{p.sell_price.toFixed(2)} / {p.base_unit}</TableCell>
-                  <TableCell align="right">
-                    {p.pack_sell_price ? `฿${p.pack_sell_price.toFixed(2)} / ${p.pack_unit}` : 'N/A'}
+                <TableRow key={p.id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.01)' } }}>
+                  <TableCell sx={{ color: '#94a3b8', fontFamily: 'monospace' }}>{p.barcode}</TableCell>
+                  <TableCell><strong style={{ color: '#fff' }}>{p.name}</strong></TableCell>
+                  <TableCell>
+                    <Chip label={p.category || 'ทั่วไป'} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.05)', color: '#94a3b8' }} />
                   </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold', color: p.stock_qty <= 10 ? '#d32f2f' : '#000' }}>
-                    {p.stock_qty} {p.base_unit}
+                  <TableCell align="right" sx={{ color: '#94a3b8' }}>฿{p.cost_price.toFixed(2)}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 800, color: '#fff' }}>฿{p.sell_price.toFixed(2)} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>/{p.base_unit}</span></TableCell>
+                  <TableCell align="right" sx={{ color: '#94a3b8' }}>
+                    {p.pack_sell_price ? (
+                      <span><strong>฿{p.pack_sell_price.toFixed(2)}</strong> <span style={{ fontSize: '0.8rem', color: '#64748b' }}>/{p.pack_unit} ({p.pack_size})</span></span>
+                    ) : (
+                      <span style={{ color: '#475569' }}>-</span>
+                    )}
                   </TableCell>
                   <TableCell align="center">
                     <Typography 
                       variant="body2" 
-                      color={p.warning_price_cap ? 'error' : 'textSecondary'}
-                      sx={{ fontWeight: p.warning_price_cap ? 'bold' : 'normal' }}
+                      sx={{ 
+                        fontWeight: 800, 
+                        color: p.stock_qty <= 10 ? '#ef4444' : '#10b981',
+                        bgcolor: p.stock_qty <= 10 ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
+                        py: 0.5, px: 1, borderRadius: 1.5, display: 'inline-block'
+                      }}
                     >
-                      ฿{p.recommended_price.toFixed(2)} {p.warning_price_cap ? '⚠️' : ''}
+                      {p.stock_qty} {p.base_unit}
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton color="primary" onClick={() => handleOpenEdit(p)}>
+                    <Chip 
+                      label={`฿${p.recommended_price.toFixed(2)}`} 
+                      color={p.warning_price_cap ? 'error' : 'default'} 
+                      variant={p.warning_price_cap ? 'filled' : 'outlined'}
+                      size="small"
+                      sx={{ fontWeight: 'bold' }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton color="primary" onClick={() => handleOpenEdit(p)} sx={{ mr: 0.5 }}>
                       <EditIcon />
                     </IconButton>
                     <IconButton color="error" onClick={() => handleDelete(p.id)}>
@@ -302,24 +318,24 @@ const Inventory: React.FC = () => {
 
       {/* Dialog: Add/Edit Product & Price Calculator */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold' }}>
-          {editingId ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มสินค้าใหม่'}
+        <DialogTitle sx={{ fontWeight: 800, bgcolor: '#1e293b', color: '#fff', py: 2.5 }}>
+          {editingId ? '📝 แก้ไขข้อมูลสินค้าในคลัง' : '✨ เพิ่มสินค้าใหม่เข้าระบบ'}
         </DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          <Grid container spacing={2}>
+        <DialogContent sx={{ pt: 3, bgcolor: '#0f172a' }}>
+          <Grid container spacing={3}>
             {/* General Info */}
             <Grid size={{ xs: 12, sm: 6 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, color: '#1976d2' }}>ข้อมูลทั่วไป</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#3b82f6' }}>📦 รายละเอียดสินค้าทั่วไป</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <TextField label="รหัสบาร์โค้ด / Barcode" fullWidth value={barcode} onChange={(e) => setBarcode(e.target.value)} />
                 <TextField label="ชื่อสินค้า / Product Name" fullWidth value={name} onChange={(e) => setName(e.target.value)} />
                 <TextField label="หมวดหมู่ / Category" fullWidth value={category} onChange={(e) => setCategory(e.target.value)} />
                 <Grid container spacing={2}>
                   <Grid size={6}>
-                    <TextField label="หน่วยฐาน (เช่น ชิ้น)" fullWidth value={baseUnit} onChange={(e) => setBaseUnit(e.target.value)} />
+                    <TextField label="หน่วยย่อย (เช่น ชิ้น, ขวด)" fullWidth value={baseUnit} onChange={(e) => setBaseUnit(e.target.value)} />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="สต็อกปัจจุบัน (หน่วยย่อย)" type="number" fullWidth value={stockQty} onChange={(e) => setStockQty(e.target.value)} />
+                    <TextField label="จำนวนในคลังเริ่มต้น" type="number" fullWidth value={stockQty} onChange={(e) => setStockQty(e.target.value)} />
                   </Grid>
                 </Grid>
               </Box>
@@ -327,28 +343,28 @@ const Inventory: React.FC = () => {
 
             {/* Pack configurations */}
             <Grid size={{ xs: 12, sm: 6 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>ข้อมูลหน่วยสินค้า (Pack config)</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#10b981' }}>📦 ข้อมูลหน่วยสินค้าแบบขายแพ็ค (Pack config)</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <Grid container spacing={2}>
                   <Grid size={6}>
-                    <TextField label="หน่วยแพ็ค (เช่น แพ็ค/ลัง)" fullWidth value={packUnit} onChange={(e) => setPackUnit(e.target.value)} />
+                    <TextField label="หน่วยแพ็ค (เช่น แพ็ค, กล่อง)" fullWidth value={packUnit} onChange={(e) => setPackUnit(e.target.value)} />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="จำนวนย่อยต่อแพ็ค (Pack size)" type="number" fullWidth value={packSize} onChange={(e) => setPackSize(e.target.value)} />
+                    <TextField label="ขนาดบรรจุ (ชิ้น/แพ็ค)" type="number" fullWidth value={packSize} onChange={(e) => setPackSize(e.target.value)} />
                   </Grid>
                 </Grid>
-                <TextField label="ราคาขายปลีกชิ้นย่อย (Sell Price)" type="number" fullWidth value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} />
-                <TextField label="ราคาขายส่งทั้งแพ็ค (Pack Sell Price - เว้นว่างได้)" type="number" fullWidth value={packSellPrice} onChange={(e) => setPackSellPrice(e.target.value)} />
+                <TextField label="ราคาขายปลีกหน่วยย่อย (ชิ้น)" type="number" fullWidth value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} />
+                <TextField label="ราคาขายส่งยกแพ็ค (ถ้าเว้นไว้ จะคิดราคาปลีก * ขนาดบรรจุ)" type="number" fullWidth value={packSellPrice} onChange={(e) => setPackSellPrice(e.target.value)} />
               </Box>
             </Grid>
 
             {/* Price Recommendation Calculator */}
             <Grid size={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#e65100' }}>
-                ระบบแนะนำและคำนวณราคาขาย (Price Calculator)
+              <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.06)' }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: '#f59e0b', mt: 1 }}>
+                🧮 ระบบช่วยคำนวณและเสนอราคาแนะนำขาย (Price Calculator)
               </Typography>
-              <Grid container spacing={2}>
+              <Grid container spacing={2.5}>
                 <Grid size={{ xs: 12, sm: 3 }}>
                   <TextField label="ราคาทุนต่อชิ้นย่อย" type="number" fullWidth value={costPrice} onChange={(e) => setCostPrice(e.target.value)} />
                 </Grid>
@@ -356,22 +372,27 @@ const Inventory: React.FC = () => {
                   <TextField label="ภาษีมูลค่าเพิ่ม (%)" type="number" fullWidth value={taxPercent} onChange={(e) => setTaxPercent(e.target.value)} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 3 }}>
-                  <TextField label="ค่าแรง/ต้นทุนขนส่งต่อชิ้น" type="number" fullWidth value={laborCost} onChange={(e) => setLaborCost(e.target.value)} />
+                  <TextField label="ค่าแรง + ค่าขนส่ง / ชิ้น" type="number" fullWidth value={laborCost} onChange={(e) => setLaborCost(e.target.value)} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 3 }}>
-                  <TextField label="เพดานราคาตลาด (สูงสุด)" type="number" fullWidth value={marketPriceCap} onChange={(e) => setMarketPriceCap(e.target.value)} />
+                  <TextField label="เพดานราคาตลาดสูงสุด" type="number" fullWidth value={marketPriceCap} onChange={(e) => setMarketPriceCap(e.target.value)} />
                 </Grid>
               </Grid>
 
               {/* Calculator Output */}
-              <Card sx={{ mt: 2, bgcolor: isCapExceeded ? '#ffebee' : '#fff3e0', border: '1px solid', borderColor: isCapExceeded ? '#ef5350' : '#ffb74d' }}>
-                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                    ผลการคำนวณ: ราคาขายปลีกแนะนำ = ฿{computedRecPrice.toFixed(2)}
+              <Card sx={{ 
+                mt: 3, 
+                bgcolor: isCapExceeded ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', 
+                border: '1px solid', 
+                borderColor: isCapExceeded ? '#ef4444' : '#f59e0b' 
+              }}>
+                <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: isCapExceeded ? '#f87171' : '#fbbf24' }}>
+                    ผลการประเมิน: ราคาแนะนำขายปลีก = ฿{computedRecPrice.toFixed(2)} บาท
                   </Typography>
                   {isCapExceeded && (
                     <Typography variant="body2" color="error" sx={{ fontWeight: 'bold', mt: 1 }}>
-                      ⚠️ คำเตือน: ราคาแนะนำสูงกว่าเพดานราคาตลาดที่กำหนดไว้ (฿{capNum.toFixed(2)}) กรุณาตรวจสอบราคาทุนใหม่!
+                      ⚠️ คำเตือน: ราคาขายแนะนำสูงกว่าเพดานราคาตลาดที่ยอมรับได้ (฿{capNum.toFixed(2)}) กรุณาตรวจสอบและทบทวนราคาทุน/อัตรากำไรของคุณใหม่!
                     </Typography>
                   )}
                 </CardContent>
@@ -379,9 +400,9 @@ const Inventory: React.FC = () => {
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions sx={{ p: 2.5, bgcolor: '#0f172a', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <Button onClick={() => setDialogOpen(false)}>ยกเลิก</Button>
-          <Button onClick={handleSave} variant="contained" color="primary">บันทึกข้อมูล</Button>
+          <Button onClick={handleSave} variant="contained" color="primary" sx={{ px: 4 }}>บันทึกข้อมูลสินค้า</Button>
         </DialogActions>
       </Dialog>
 
@@ -397,13 +418,13 @@ const Inventory: React.FC = () => {
             type="file" 
             accept=".csv" 
             onChange={handleFileChange} 
-            style={{ padding: '10px 0' }}
+            style={{ padding: '15px 0', color: '#94a3b8' }}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setImportOpen(false)}>ยกเลิก</Button>
           <Button onClick={handleImportCSVSubmit} variant="contained" color="success" disabled={!csvFile}>
-            อัปโหลดไฟล์
+            อัปโหลดไฟล์ CSV
           </Button>
         </DialogActions>
       </Dialog>
