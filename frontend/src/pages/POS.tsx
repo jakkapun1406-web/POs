@@ -593,44 +593,6 @@ const POS: React.FC = () => {
               </Table>
             </TableContainer>
 
-            {/* Quick Item Grid (Fixed height) */}
-            <Typography variant="caption" sx={{ mb: 0.5, fontWeight: 'bold', color: '#94a3b8', display: 'block', flexShrink: 0 }}>
-              ⚡ รายการด่วนยอดนิยม / Quick Items
-            </Typography>
-            <Grid container spacing={0.8} sx={{ mb: 1.5, flexShrink: 0 }}>
-              {[
-                { name: 'ถุงหิ้วพลาสติก', price: 1, unit: 'ใบ', color: '#475569' },
-                { name: 'น้ำแข็งเปล่า', price: 2, unit: 'แก้ว', color: '#0891b2' },
-                { name: 'ไข่ไก่ดิบ', price: 5, unit: 'ฟอง', color: '#b45309' },
-                { name: 'สินค้าด่วน 10 บ.', price: 10, unit: 'ชิ้น', color: '#0f766e' },
-                { name: 'สินค้าด่วน 20 บ.', price: 20, unit: 'ชิ้น', color: '#1d4ed8' },
-                { name: 'สินค้าด่วน 50 บ.', price: 50, unit: 'ชิ้น', color: '#701a75' },
-                { name: 'สินค้าด่วน 100 บ.', price: 100, unit: 'ชิ้น', color: '#4c1d95' }
-              ].map((q) => (
-                <Grid size={{ xs: 3, sm: 1.71 }} key={q.name}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleQuickAdd(q.name, q.price, q.unit)}
-                    sx={{
-                      bgcolor: q.color,
-                      fontSize: '0.7rem',
-                      py: 0.8,
-                      borderRadius: 2,
-                      boxShadow: 'none',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      '&:hover': { bgcolor: q.color, filter: 'brightness(1.15)' }
-                    }}
-                  >
-                    {q.name.split(' ')[0]} ({q.price}.-)
-                  </Button>
-                </Grid>
-              ))}
-            </Grid>
-
             {/* Bottom holds controls (Fixed height) */}
             <Box sx={{ display: 'flex', gap: 1, height: 42, flexShrink: 0 }}>
               <Button 
