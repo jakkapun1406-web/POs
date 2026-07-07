@@ -312,3 +312,25 @@ def trigger_cash_drawer(db: Session = Depends(get_db), current_admin: Employee =
     if not success:
         raise HTTPException(status_code=500, detail=msg)
     return {"status": "success", "detail": msg}
+
+# Reprint Receipt API
+@router.post("/{sale_id}/reprint")
+def reprint_receipt(
+    sale_id: int, 
+    background_tasks: BackgroundTasks, 
+    db: Session = Depends(get_db), 
+    current_emp: Employee = Depends(get_current_employee)
+):
+    sale = db.query(Sale).filter(Sale.id == sale_id).first()
+    if not sale:
+        raise HTTPException(status_code=404, detail="ไม่พบข้อมูลบิลการขาย")
+        
+    settings = db.query(Setting).first()
+    if not settings:
+        raise HTTPException(status_code=400, detail="ไม่ได้ตั้งค่าเครื่องพิมพ์")
+        
+    welfare_txn = db.query(GovtWelfareTxn).filter(GovtWelfareTxn.sale_id == sale.id).first()
+    
+    background_tasks.add_task(print_receipt, sale, settings, welfare_txn)
+    
+    return {"status": "success", "detail": "กำลังพิมพ์ใบเสร็จซ้ำ..."}

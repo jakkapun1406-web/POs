@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
+import PrintIcon from '@mui/icons-material/Print';
 import api from '../services/api';
 
 interface SaleItem {
@@ -75,6 +76,16 @@ const SalesHistory: React.FC = () => {
   const handleOpenDetails = (sale: Sale) => {
     setSelectedSale(sale);
     setDetailsOpen(true);
+  };
+
+  const handleReprintReceipt = async () => {
+    if (!selectedSale) return;
+    try {
+      await api.post(`/sales/${selectedSale.id}/reprint`);
+      showTimedSuccess('สั่งพิมพ์ใบเสร็จซ้ำไปยังเครื่องพิมพ์แล้ว');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'เกิดข้อผิดพลาดในการสั่งพิมพ์ใบเสร็จ');
+    }
   };
 
   const handleOpenReturn = () => {
@@ -323,6 +334,15 @@ const SalesHistory: React.FC = () => {
                   คืนสินค้า (Refund)
                 </Button>
               )}
+              <Button 
+                onClick={handleReprintReceipt} 
+                variant="contained" 
+                color="info" 
+                startIcon={<PrintIcon />}
+                sx={{ mr: 1.5 }}
+              >
+                พิมพ์ใบเสร็จซ้ำ (Print)
+              </Button>
               <Button onClick={() => setDetailsOpen(false)} variant="outlined">ปิดหน้าจอ</Button>
             </DialogActions>
           </>
