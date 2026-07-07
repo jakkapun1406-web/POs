@@ -633,193 +633,184 @@ const POS: React.FC = () => {
         {/* Right Side: Total Summary / Checkout controls - zero scroll layout */}
         <Grid size={{ xs: 12, md: 4 }} sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Paper elevation={0} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: '#0f172a' }}>
-            
-            {/* Glowing neon total screen */}
-            <Box 
-              sx={{ 
-                mb: 1.5, 
-                p: 1.8, 
-                bgcolor: '#020617', 
-                borderRadius: 3.5, 
-                textAlign: 'center', 
-                border: '1px solid rgba(59, 130, 246, 0.25)',
-                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.8), 0 0 15px rgba(59, 130, 246, 0.1)'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                ยอดชำระทั้งหมด / Grand Total
-              </Typography>
-              <Typography 
-                variant="h3" 
-                sx={{ 
-                  fontWeight: 900, 
-                  color: '#3b82f6', 
-                  mt: 0.5,
-                  fontFamily: 'Outfit',
-                  textShadow: '0 0 8px rgba(59, 130, 246, 0.4)'
-                }}
-              >
-                ฿{totalCartAmount.toFixed(2)}
-              </Typography>
-            </Box>
+             {/* Glowing neon total screen */}
+             <Box 
+               sx={{ 
+                 mb: 1.2, 
+                 p: 1.2, 
+                 bgcolor: '#020617', 
+                 borderRadius: 2.5, 
+                 textAlign: 'center', 
+                 border: '1px solid rgba(59, 130, 246, 0.25)',
+                 boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.8), 0 0 10px rgba(59, 130, 246, 0.1)'
+               }}
+             >
+               <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                 ยอดชำระทั้งหมด / Grand Total
+               </Typography>
+               <Typography 
+                 variant="h4" 
+                 sx={{ 
+                   fontWeight: 900, 
+                   color: '#3b82f6', 
+                   mt: 0.2,
+                   fontFamily: 'Outfit',
+                   textShadow: '0 0 6px rgba(59, 130, 246, 0.4)'
+                 }}
+               >
+                 ฿{totalCartAmount.toFixed(2)}
+               </Typography>
+             </Box>
 
-            {/* Scrollable Container for inputs (keeps them from pushing the PAY button off screen) */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5, mb: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {/* Welfare toggle config */}
-              <Box sx={{ p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
-                <FormControlLabel
-                  control={
-                    <Switch 
-                      checked={useWelfare} 
-                      onChange={(e) => setUseWelfare(e.target.checked)} 
-                      color="secondary"
-                      size="small"
-                    />
-                  }
-                  label={<strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>คนละครึ่ง (สวัสดิการรัฐ)</strong>}
-                  sx={{ m: 0 }}
-                />
-                {useWelfare && (
-                  <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="caption" sx={{ color: '#64748b' }}>
-                      * รัฐช่วย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
-                    </Typography>
-                    <TextField
-                      label="จำนวนรัฐออกให้"
-                      type="number"
-                      size="small"
-                      value={discountGovt}
-                      onChange={(e) => setDiscountGovt(Math.min(totalCartAmount, parseFloat(e.target.value) || 0))}
-                    />
-                    <Divider sx={{ my: 0.5, borderColor: 'rgba(255,255,255,0.06)' }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>ยอดเก็บสดหน้าร้านจริง:</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 800, color: '#ef4444' }}>
-                        ฿{(customerPortion).toFixed(2)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
-              </Box>
+             {/* Payment Type Selection (Fixed height) */}
+             <ButtonGroup fullWidth sx={{ mb: 1.5, '& .MuiButton-root': { py: 1.3, fontSize: '0.9rem', fontWeight: 900 } }}>
+               <Button 
+                 variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
+                 onClick={() => { setPaymentType('cash'); setUseWelfare(false); }}
+                 startIcon={<LocalAtmIcon />}
+               >
+                 เงินสด
+               </Button>
+               <Button 
+                 variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
+                 onClick={() => { setPaymentType('qr'); setUseWelfare(false); }}
+                 startIcon={<QrCodeScannerIcon />}
+               >
+                 สแกน QR
+               </Button>
+               <Button 
+                 variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
+                 onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
+                 startIcon={<PointOfSaleIcon />}
+               >
+                 เป๋าตัง
+               </Button>
+             </ButtonGroup>
 
-              {/* Payment buttons */}
-              <ButtonGroup fullWidth sx={{ '& .MuiButton-root': { py: 1.8, fontSize: '1.05rem', fontWeight: 900 } }}>
-                <Button 
-                  variant={paymentType === 'cash' ? 'contained' : 'outlined'} 
-                  onClick={() => setPaymentType('cash')}
-                  startIcon={<LocalAtmIcon />}
-                >
-                  เงินสด
-                </Button>
-                <Button 
-                  variant={paymentType === 'qr' ? 'contained' : 'outlined'} 
-                  onClick={() => setPaymentType('qr')}
-                  startIcon={<QrCodeScannerIcon />}
-                >
-                  สแกน QR
-                </Button>
-                <Button 
-                  variant={paymentType === 'govt_welfare' ? 'contained' : 'outlined'} 
-                  onClick={() => { setPaymentType('govt_welfare'); setUseWelfare(true); }}
-                  startIcon={<PointOfSaleIcon />}
-                >
-                  เป๋าตัง
-                </Button>
-              </ButtonGroup>
+             {/* Welfare Toggle config - ONLY shown when govt_welfare (เป๋าตัง) is active */}
+             {paymentType === 'govt_welfare' && (
+               <Box sx={{ mb: 1.5, p: 1.2, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.005)' }}>
+                 <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 'bold', display: 'block', mb: 0.5 }}>
+                   คนละครึ่ง (สวัสดิการรัฐ) — รัฐช่วย {govtPercent}% (ไม่เกิน ฿{govtDailyCap}/วัน)
+                 </Typography>
+                 <TextField
+                   label="จำนวนที่รัฐออกให้"
+                   type="number"
+                   size="small"
+                   fullWidth
+                   value={discountGovt}
+                   onChange={(e) => setDiscountGovt(Math.min(totalCartAmount, parseFloat(e.target.value) || 0))}
+                   slotProps={{ htmlInput: { style: { padding: '8px 10px' } } }}
+                 />
+                 <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.06)' }} />
+                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <Typography variant="caption" sx={{ color: '#94a3b8' }}>ยอดเก็บสดหน้าร้านจริง:</Typography>
+                   <Typography variant="body1" sx={{ fontWeight: 800, color: '#ef4444' }}>
+                     ฿{(customerPortion).toFixed(2)}
+                   </Typography>
+                 </Box>
+               </Box>
+             )}
 
-              {/* Cash details and Thai banknote buttons */}
-              {paymentType === 'cash' && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  <TextField
-                    label="รับเงินสดมา (Cash Received)"
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    value={cashReceived}
-                    onChange={(e) => setCashReceived(e.target.value)}
-                    autoComplete="off"
-                    slotProps={{ 
-                      htmlInput: { 
-                        style: { 
-                          fontSize: '1.6rem', 
-                          fontWeight: 900, 
-                          color: '#fff', 
-                          textAlign: 'right',
-                          padding: '12px 14px' 
-                        } 
-                      } 
-                    }}
-                  />
-                  
-                  {/* Banknote Buttons styled like Thai bills - 2 rows of 3 columns */}
-                  <Grid container spacing={1}>
-                    {[
-                      { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
-                      { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
-                      { value: 100, bg: '#450a0a', color: '#f87171', label: '100' },
-                      { value: 500, bg: '#3b0764', color: '#c084fc', label: '500' },
-                      { value: 1000, bg: '#292524', color: '#f4ebe4', label: '1,000' }
-                    ].map(b => (
-                      <Grid size={4} key={b.value}>
-                        <Button 
-                          fullWidth 
-                          onClick={() => {
-                            const currentVal = parseFloat(cashReceived) || 0;
-                            setCashReceived((currentVal + b.value).toString());
-                          }}
-                          sx={{ 
-                            bgcolor: b.bg, 
-                            color: b.color, 
-                            fontSize: '1rem',
-                            fontWeight: 900,
-                            py: 1.4, 
-                            borderRadius: 2,
-                            border: `1px solid ${b.color}44`,
-                            '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
-                          }}
-                        >
-                          +{b.label}
-                        </Button>
-                      </Grid>
-                    ))}
-                    {/* Clear Button */}
-                    <Grid size={4}>
-                      <Button 
-                        fullWidth 
-                        onClick={() => setCashReceived('')}
-                        sx={{ 
-                          bgcolor: '#1e293b', 
-                          color: '#ef4444', 
-                          fontSize: '1rem',
-                          fontWeight: 900,
-                          py: 1.4, 
-                          borderRadius: 2,
-                      }}
-                    >
-                      ล้างยอด (C)
-                    </Button>
-                  </Grid>
-                  <Grid size={12}>
-                    <Button 
-                      fullWidth 
-                      variant="outlined" 
-                      onClick={() => setCashReceived(customerPortion.toString())}
-                      sx={{ py: 1, fontSize: '0.85rem', fontWeight: 'bold', color: '#94a3b8', borderColor: 'rgba(255,255,255,0.08)' }}
-                    >
-                      รับเงินสดพอดีดีดบิล (Exact: ฿{customerPortion.toFixed(0)})
-                    </Button>
-                  </Grid>
-                </Grid>
+             {/* Cash Details - ONLY shown when Cash (เงินสด) is active */}
+             {paymentType === 'cash' && (
+               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                 <TextField
+                   label="รับเงินสดมา (Cash Received)"
+                   variant="outlined"
+                   type="number"
+                   fullWidth
+                   size="small"
+                   value={cashReceived}
+                   onChange={(e) => setCashReceived(e.target.value)}
+                   autoComplete="off"
+                   slotProps={{ 
+                     htmlInput: { 
+                       style: { 
+                         fontSize: '1.25rem', 
+                         fontWeight: 800, 
+                         color: '#fff', 
+                         textAlign: 'right',
+                         padding: '8px 12px' 
+                       } 
+                     } 
+                   }}
+                 />
+                 
+                 {/* Banknotes - 2 rows of 3 columns (very fat and easy to touch) */}
+                 <Grid container spacing={0.6}>
+                   {[
+                     { value: 20, bg: '#14532d', color: '#4ade80', label: '20' },
+                     { value: 50, bg: '#172554', color: '#60a5fa', label: '50' },
+                     { value: 100, bg: '#450a0a', color: '#f87171', label: '100' },
+                     { value: 500, bg: '#3b0764', color: '#c084fc', label: '500' },
+                     { value: 1000, bg: '#292524', color: '#f4ebe4', label: '1,000' }
+                   ].map(b => (
+                     <Grid size={4} key={b.value}>
+                       <Button 
+                         fullWidth 
+                         onClick={() => {
+                           const currentVal = parseFloat(cashReceived) || 0;
+                           setCashReceived((currentVal + b.value).toString());
+                         }}
+                         sx={{ 
+                           bgcolor: b.bg, 
+                           color: b.color, 
+                           fontSize: '0.85rem',
+                           fontWeight: 900,
+                           py: 1, 
+                           borderRadius: 1.5,
+                           border: `1px solid ${b.color}33`,
+                           '&:hover': { bgcolor: b.bg, filter: 'brightness(1.2)' }
+                         }}
+                       >
+                         +{b.label}
+                       </Button>
+                     </Grid>
+                   ))}
+                   {/* Clear Button */}
+                   <Grid size={4}>
+                     <Button 
+                       fullWidth 
+                       onClick={() => setCashReceived('')}
+                       sx={{ 
+                         bgcolor: '#1e293b', 
+                         color: '#ef4444', 
+                         fontSize: '0.85rem',
+                         fontWeight: 900,
+                         py: 1, 
+                         borderRadius: 1.5,
+                         border: '1px solid rgba(239,68,68,0.15)',
+                         '&:hover': { bgcolor: '#334155' }
+                       }}
+                     >
+                       ล้าง (C)
+                     </Button>
+                   </Grid>
+                   <Grid size={12}>
+                     <Button 
+                       fullWidth 
+                       variant="outlined" 
+                       size="small"
+                       onClick={() => setCashReceived(customerPortion.toString())}
+                       sx={{ py: 0.6, fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8', borderColor: 'rgba(255,255,255,0.06)' }}
+                     >
+                       รับเงินสดพอดีดีดบิล (Exact: ฿{customerPortion.toFixed(0)})
+                     </Button>
+                   </Grid>
+                 </Grid>
 
-                <Box sx={{ p: 2, bgcolor: '#020617', borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.08)' }}>
-                  <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900, color: '#10b981', fontFamily: 'Outfit' }}>
-                    ฿{computedChange.toFixed(2)}
-                  </Typography>
-                </Box>
-              </Box>
-            )}
-            </Box>
+                 {/* Compact Change display */}
+                 <Box sx={{ p: 1.2, bgcolor: '#020617', borderRadius: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(16,185,129,0.06)' }}>
+                   <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 'bold' }}>เงินทอน / Change:</Typography>
+                   <Typography variant="h5" sx={{ fontWeight: 900, color: '#10b981', fontFamily: 'Outfit' }}>
+                     ฿{computedChange.toFixed(2)}
+                   </Typography>
+                 </Box>
+               </Box>
+             )}
+
+             <Box sx={{ flexGrow: 1 }} />
 
             <Button
               fullWidth
